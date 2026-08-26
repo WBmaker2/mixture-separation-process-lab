@@ -75,3 +75,26 @@ dist/assets/index-BUgmv3F1.js   190.56 kB │ gzip: 60.14 kB
 
 - 최초 npm 설치는 사용자 npm 캐시의 root 소유 파일로 `EPERM`이 발생했으나, 작업 전용 임시 npm 캐시로 재시도해 정상 설치했습니다.
 - 현재 `App`은 Task 1 범위의 최소 셸이며 실제 학습 흐름과 기능은 후속 Task에서 구현됩니다.
+
+## 수정 라운드 1: lockfile 루트 메타데이터 정합성
+
+리뷰에서 지적된 `package-lock.json`의 루트 `name`/`version`이 `package.json`과 불일치하던 문제를 `npm install --package-lock-only`로 재생성해 수정했습니다. 이제 두 파일 모두 `mixture-separation-process-lab`, `0.1.0`을 사용합니다.
+
+검증 명령과 결과:
+
+```text
+npm_config_cache=/private/tmp/mixture-separation-npm-cache npm ci
+added 118 packages, and audited 119 packages in 2s
+found 0 vulnerabilities
+
+npm run test -- src/App.test.tsx
+Test Files  1 passed (1)
+Tests       1 passed (1)
+
+npm run build
+✓ 17 modules transformed.
+dist/index.html                   0.57 kB │ gzip:  0.40 kB
+dist/assets/index-BFkZ8sMI.css    0.23 kB │ gzip:  0.20 kB
+dist/assets/index-BUgmv3F1.js   190.56 kB │ gzip: 60.14 kB
+✓ built in 283ms
+```
