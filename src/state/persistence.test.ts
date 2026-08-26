@@ -1,0 +1,9 @@
+import { describe, expect, it, vi } from 'vitest';
+import { createInitialSession } from './labReducer';
+import { loadSession, saveSession, serializeSession, STORAGE_KEY } from './persistence';
+describe('local-only persistence', () => {
+  it('saves only the versioned learning session and no student identity field', () => { const setItem = vi.fn(); saveSession({ setItem }, createInitialSession()); const saved = setItem.mock.calls[0][1] as string; expect(setItem).toHaveBeenCalledOnce(); expect(saved).toContain('"schemaVersion":1'); expect(saved).not.toMatch(/studentName|realName|email/); });
+  it('recovers valid sessions and resets malformed or unknown versions', () => { const valid = JSON.stringify(createInitialSession()); expect(loadSession({ getItem: () => valid }).schemaVersion).toBe(1); expect(loadSession({ getItem: () => '{bad json' })).toEqual(createInitialSession()); expect(loadSession({ getItem: () => JSON.stringify({ schemaVersion: 99 }) })).toEqual(createInitialSession()); expect(STORAGE_KEY).toBe('mixture-separation-process-lab:v1'); });
+  it('fails closed for malformed nested plans and incomplete runs', () => { const base = createInitialSession(); expect(loadSession({ getItem: () => JSON.stringify({ ...base, draftPlan: [{ id: 'x', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'wrong', params: { gap: 'wide-gap' } }] }) })).toEqual(base); expect(loadSession({ getItem: () => JSON.stringify({ ...base, currentRun: {} }) })).toEqual(base); });
+  it('strips nested identity fields while preserving valid session data', () => { const state: any = { ...createInitialSession(), predictions: { step: 'pass', studentName: 'x' }, draftPlan: [{ id: 'x', actionId: 'sieve', input: { source: 'initial', email: 'x' }, evidencePropertyId: 'particle-size', params: { gap: 'wide-gap' }, realName: 'x' }] }; const saved = serializeSession(state); expect(saved).not.toMatch(/studentName|realName|email/); });
+});
