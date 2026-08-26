@@ -10,6 +10,8 @@ function planChange(state: LabSession, plan: readonly ProcessStep[]): LabSession
 function missionTargets(id: MissionId): readonly MaterialId[] { const m = getMission(id); return m.goal.mode === 'all-components' ? [...m.goal.requiredTargets] : []; }
 function targetsOkay(s: LabSession) { if (!s.missionId) return false; const goal = getMission(s.missionId).goal; return goal.mode === 'all-components' ? s.selectedTargetIds.length === goal.requiredTargets.length && goal.requiredTargets.every((x) => s.selectedTargetIds.includes(x)) : s.selectedTargetIds.length === 1 && getMission(s.missionId).initialMaterials.includes(s.selectedTargetIds[0]); }
 function accepted(s: LabSession) { if (!s.missionId || !s.currentRun) return false; const q = computeQuality(s.currentRun, s.recoveryClaims, s.selectedTargetIds); return evaluateRun(s.currentRun, q, s.confirmedPropertyIds).accepted; }
+function complete(s: LabSession) { return s.draftPlan.every((p) => s.completedStepIds.includes(p.id)); }
+function startSimulation(s: LabSession): LabSession { if (!s.missionId || !targetsOkay(s) || !s.draftPlan.length || (s.stage !== 'design' && s.stage !== 'revision') || !getMission(s.missionId).requiredPropertyIds.every((p) => s.confirmedPropertyIds.includes(p)) || validatePlan(getMission(s.missionId), s.draftPlan, s.confirmedPropertyIds).length) return s; if (s.stage === 'revision' && (!s.initialPlan || s.revisionReason.trim().length < 10 || JSON.stringify(s.draftPlan) === JSON.stringify(s.initialPlan))) return s; return { ...s, stage: 'simulation', currentRun: runProcess(getMission(s.missionId), s.draftPlan), initialPlan: s.initialPlan ?? clonePlan(s.draftPlan), completedStepIds: [], predictions: {}, recoveryClaims: [] }; }
 function revisedReady(s: LabSession) { return s.stage === 'quality' && s.attempt === 'revised' && s.initialPlan !== null && Boolean(s.currentRun) && s.completedStepIds.length >= s.draftPlan.length && accepted(s) && s.draftPlan.length !== 0 && JSON.stringify(s.draftPlan) !== JSON.stringify(s.initialPlan) && s.revisionReason.trim().length >= 10; }
 export function labReducer(state: LabSession, action: LabAction): LabSession {
   switch (action.type) {
@@ -22,7 +24,7 @@ export function labReducer(state: LabSession, action: LabAction): LabSession {
     case 'remove-step': { const p = state.draftPlan.filter((x) => x.id !== action.stepId); return p.length === state.draftPlan.length ? state : planChange(state, p); }
     case 'undo-plan': { if (!state.planHistory.length) return state; const history = [...state.planHistory]; const p = history.pop()!; return { ...state, draftPlan: clonePlan(p), planHistory: history }; }
     case 'restore-initial-plan': return state.initialPlan && JSON.stringify(state.draftPlan) !== JSON.stringify(state.initialPlan) ? planChange(state, state.initialPlan) : state;
-    case 'start-simulation': { if (!state.missionId || !['design', 'revision'].includes(state.stage) || validatePlan(getMission(state.missionId), state.draftPlan, state.confirmedPropertyIds).length) return state; const run = runProcess(getMission(state.missionId), state.draftPlan); return { ...state, stage: 'simulation', currentRun: run, initialPlan: state.initialPlan ?? clonePlan(state.draftPlan), completedStepIds: [], predictions: {}, recoveryClaims: [] }; }
+    case 'start-simulation': return startSimulation(state);
     case 'record-prediction': return state.draftPlan.some((x) => x.id === action.stepId) ? { ...state, predictions: { ...state.predictions, [action.stepId]: action.port } } : state;
     case 'record-step-complete': return state.draftPlan.some((x) => x.id === action.stepId) && !state.completedStepIds.includes(action.stepId) ? { ...state, completedStepIds: [...state.completedStepIds, action.stepId] } : state;
     case 'set-run': return { ...state, currentRun: action.run };
@@ -34,10 +36,10 @@ export function labReducer(state: LabSession, action: LabAction): LabSession {
     case 'advance': {
       if (state.stage === 'intake' && state.missionId && targetsOkay(state)) return { ...state, stage: 'properties' };
       if (state.stage === 'properties' && state.missionId && getMission(state.missionId).requiredPropertyIds.every((x) => state.confirmedPropertyIds.includes(x))) return { ...state, stage: 'design' };
-      if (state.stage === 'design' && state.missionId && validatePlan(getMission(state.missionId), state.draftPlan, state.confirmedPropertyIds).length === 0) return { ...state, stage: 'simulation' };
-      if (state.stage === 'simulation' && state.currentRun && state.completedStepIds.length >= state.draftPlan.length) return { ...state, stage: 'quality' };
+      if (state.stage === 'design') return startSimulation(state);
+      if (state.stage === 'simulation' && state.currentRun && complete(state)) return { ...state, stage: 'quality' };
       if (state.stage === 'quality' && accepted(state)) return state.attempt === 'initial' && state.missionId !== 'integrated-process' ? { ...state, stage: 'report' } : state;
-      if (state.stage === 'revision' && state.attempt === 'revised' && state.missionId && validatePlan(getMission(state.missionId), state.draftPlan, state.confirmedPropertyIds).length === 0 && state.revisionReason.trim().length >= 10 && JSON.stringify(state.draftPlan) !== JSON.stringify(state.initialPlan)) return { ...state, stage: 'simulation', currentRun: null, predictions: {}, completedStepIds: [], recoveryClaims: [] };
+      if (state.stage === 'revision') return startSimulation(state);
       return state;
     }
     case 'reset-mission': return createInitialSession();
@@ -46,10 +48,10 @@ export function labReducer(state: LabSession, action: LabAction): LabSession {
 export function getAttentionActionId(state: LabSession): AttentionActionId | null {
   if (state.stage === 'intake') return state.missionId ? (targetsOkay(state) ? null : 'select-target') : 'select-mission';
   if (state.stage === 'properties') return state.missionId && getMission(state.missionId).requiredPropertyIds.every((x) => state.confirmedPropertyIds.includes(x)) ? null : 'confirm-properties';
-  if (state.stage === 'design') return state.missionId && validatePlan(getMission(state.missionId), state.draftPlan, state.confirmedPropertyIds).length === 0 ? null : 'prepare-simulation';
-  if (state.stage === 'simulation') return state.completedStepIds.length < state.draftPlan.length ? 'predict-next-step' : state.currentRun ? null : 'prepare-simulation';
-  if (state.stage === 'quality') return accepted(state) ? (state.attempt === 'initial' && state.missionId === 'integrated-process' ? 'revise-process' : null) : 'inspect-quality';
-  if (state.stage === 'revision') return revisedReady(state) ? null : 'revise-process';
+  if (state.stage === 'design') return startSimulation(state) === state ? 'prepare-simulation' : 'prepare-simulation';
+  if (state.stage === 'simulation') return !complete(state) ? 'predict-next-step' : state.currentRun ? 'inspect-quality' : 'prepare-simulation';
+  if (state.stage === 'quality') return accepted(state) ? (state.attempt === 'initial' && state.missionId === 'integrated-process' ? 'revise-process' : 'complete-report') : 'inspect-quality';
+  if (state.stage === 'revision') return state.initialPlan && state.revisionReason.trim().length >= 10 && JSON.stringify(state.draftPlan) !== JSON.stringify(state.initialPlan) ? 'prepare-simulation' : 'revise-process';
   if (state.stage === 'report') return null;
   return null;
 }

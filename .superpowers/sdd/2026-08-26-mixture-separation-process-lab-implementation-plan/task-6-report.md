@@ -29,3 +29,11 @@
 - 회귀 테스트를 9개로 확장하고 전체 테스트 37개 통과, build 통과를 확인했습니다.
 - 모든 소스 파일은 500줄 미만입니다.
 - 수정 커밋 SHA는 완료 응답과 progress ledger에 기록합니다.
+
+## 리뷰 수정 라운드 2
+
+- 라운드 1 fix SHA: `4b214e5b9e22650e43458dbfe6ee62f1040f77cc`
+- exact-key 기반 ProcessStep, SimulationRun 및 nested 참조 무결성 검증을 강화했습니다.
+- design/revision 실행 helper와 quality/attention 경계를 보완했습니다.
+- 집중 테스트 9개, 전체 테스트 37개, build 및 `git diff --check` 통과를 확인했습니다.
+- 수정 커밋 SHA는 완료 응답과 progress ledger에 기록합니다.
