@@ -7,9 +7,5 @@ body {
   min-height: 100vh;
   margin: 0;
 }
-
-main {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 2rem;
-}
+button, input { font: inherit; }
+button:focus-visible, input:focus-visible, label:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
