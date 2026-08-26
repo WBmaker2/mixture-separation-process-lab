@@ -44,3 +44,15 @@
 - design/revision 실행 helper와 quality/attention 경계를 보완했습니다.
 - 집중 테스트 9개, 전체 테스트 37개, build 및 `git diff --check` 통과를 확인했습니다.
 - 수정 커밋 SHA는 완료 응답과 progress ledger에 기록합니다.
+
+## Task 6 recovery
+
+- strict runtime validator를 fixed-key/enum/배열 고유성/중첩 참조까지 보강했습니다.
+- token·stream·outcome·movement·final-location의 참조 무결성과 session mission 일치를 fail-closed로 검증합니다.
+- completedStepIds의 foreign/duplicate 경계를 닫고 revision attention이 유효하지 않은 계획을 `revise-process`로 안내하도록 했습니다.
+- 명시적 whitelist clone 경로를 유지했으며 `src/state`의 `JSON.parse(JSON.stringify(...))`는 no-match입니다.
+- 집중 테스트: 12개 통과 (2개 파일)
+- 전체 테스트: 40개 통과 (7개 파일)
+- 빌드: 통과
+- `git diff --check`: 통과
+- 커밋 SHA는 완료 응답과 progress ledger에 기록합니다.
