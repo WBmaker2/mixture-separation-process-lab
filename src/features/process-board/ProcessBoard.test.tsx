@@ -45,7 +45,8 @@ describe('ProcessBoardScreen', () => {
     );
     expect(screen.getByRole('button', { name: '방법 선택: 체로 분리' })).toBeEnabled();
     expect(screen.getByRole('button', { name: '준비 행동 선택: 물 넣기' })).toBeDisabled();
-    expect(screen.getByText(/물과 섞이는 성질을 먼저 확인/)).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent(/물에 녹는 성질/);
+    expect(screen.getByRole('alert')).toHaveAttribute('tabindex', '0');
   });
 
   it('exposes keyboard buttons for replacement, order, undo, and restoration', () => {
@@ -69,5 +70,35 @@ describe('ProcessBoardScreen', () => {
     expect(screen.getByRole('button', { name: '1단계 교체' })).toBeEnabled();
     expect(screen.getByRole('button', { name: '실행 취소' })).toBeEnabled();
     expect(screen.getByRole('button', { name: '처음 공정으로 복원' })).toBeEnabled();
+  });
+
+  it('keeps replacement id and original input while excluding future inputs', async () => {
+    const user = userEvent.setup();
+    const dispatch = vi.fn();
+    const plan = [
+      { id: 'step-1', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } },
+      { id: 'step-2', actionId: 'sieve' as const, input: { source: 'step' as const, stepId: 'step-1', port: 'pass' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } },
+    ];
+    render(<ProcessBoardScreen {...baseProps} plan={plan} dispatch={dispatch} />);
+    await user.click(screen.getByRole('button', { name: '1단계 교체' }));
+    expect(screen.queryByLabelText('3단계 입력: 통과 물질')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: '중간 간격' }));
+    await user.click(screen.getByRole('button', { name: '교체하기' }));
+    expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'replace-step', stepId: 'step-1', replacement: expect.objectContaining({ id: 'step-1', input: { source: 'initial' } }) }));
+  });
+
+  it('marks future and deleted stream references with a focusable warning', () => {
+    const plan = [
+      { id: 'step-1', actionId: 'sieve' as const, input: { source: 'step' as const, stepId: 'step-2', port: 'pass' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } },
+      { id: 'step-2', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } },
+    ];
+    render(<ProcessBoardScreen {...baseProps} plan={plan} />);
+    expect(screen.getAllByRole('alert').some((node) => node.textContent?.includes('앞 단계 출력 연결을 다시 선택하세요'))).toBe(true);
+  });
+
+  it('shows only action-relevant missing property guidance', () => {
+    render(<ProcessBoardScreen {...baseProps} confirmedPropertyIds={[]} />);
+    expect(screen.getByRole('alert')).toHaveTextContent(/알갱이 크기/);
+    expect(screen.getByRole('alert')).not.toHaveTextContent(/물과 섞이는/);
   });
 });
