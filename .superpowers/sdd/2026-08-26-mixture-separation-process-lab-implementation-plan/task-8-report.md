@@ -65,3 +65,11 @@ Fix round 3 검증: focused/reducer 13/13, full 56/56, build PASS, `git diff --c
 - 2단계 미리보기 연결자 회귀 테스트를 추가했습니다.
 
 Fix round 4 검증: focused/reducer 14/14, full 57/57, build PASS, `git diff --check` PASS, 최대 파일 135줄.
+
+## Fix round 5
+
+- `ProcessPreview`의 ordered list 직접 자식을 실제 공정 단계 `li`로만 정리했습니다.
+- 연결 화살표는 비마지막 단계 `li` 내부의 aria-hidden `span`으로 렌더링하여 목록 번호 아티팩트를 제거했습니다.
+- 2단계 연결자와 직접 자식 구조 회귀 테스트를 보강했습니다.
+
+Fix round 5 검증: focused/reducer 14/14, full 57/57, build PASS, `git diff --check` PASS, 최대 파일 138줄. 테스트 출력에 React key warning 없음.

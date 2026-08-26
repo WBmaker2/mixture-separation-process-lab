@@ -125,6 +125,9 @@ describe('ProcessBoardScreen', () => {
     render(<ProcessBoardScreen {...baseProps} plan={plan} />);
     expect(screen.getAllByTestId('preview-connector')).toHaveLength(1);
     expect(screen.getAllByText(/체로 분리/).length).toBeGreaterThanOrEqual(2);
+    const preview = screen.getByRole('heading', { name: '공정 미리보기' }).parentElement?.querySelector('ol');
+    expect(preview?.children).toHaveLength(2);
+    expect([...((preview?.children ?? []) as HTMLCollectionOf<HTMLElement>)].every((child) => child.tagName === 'LI')).toBe(true);
   });
 
   it('shows only action-relevant missing property guidance', () => {
