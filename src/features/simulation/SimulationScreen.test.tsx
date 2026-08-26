@@ -41,7 +41,7 @@ describe('SimulationScreen', () => {
   it('shows the exact model boundary and a readable token table', () => {
     renderScreen();
     expect(screen.getByText('가상 실험이며 실제 물질의 양·온도·시간을 측정하지 않습니다')).toBeVisible();
-    expect(screen.getByRole('table', { name: '단계별 물질 토큰 상태' })).toBeInTheDocument();
+    expect(screen.queryByRole('table', { name: '단계별 물질 토큰 상태' })).not.toBeInTheDocument();
   });
 
   it('uses two static scenes when reduced motion is requested', () => {
