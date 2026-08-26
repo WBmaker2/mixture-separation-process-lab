@@ -18,7 +18,7 @@ export interface MaterialStream {
 export interface TokenMovement {
   tokenId: string; stepId: string; fromStreamId: string; toStreamId: string | 'loss'; reason: string;
 }
-export interface ProcessOutput { port: OutputPortId; stream: MaterialStream; condition: StreamCondition; }
+export interface ProcessOutput { port: OutputPortId; stream: MaterialStream; }
 export interface ProcessOutcome {
   stepId: string; actionId: ProcessStep['actionId']; status: ProcessStatus;
   reasonCode: NoBasisReason | null; explanation: string;

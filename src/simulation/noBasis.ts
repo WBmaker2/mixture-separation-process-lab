@@ -12,6 +12,6 @@ export function createNoBasisOutcome(context: RuleContext, reasonCode: NoBasisRe
   return {
     stepId: context.step.id, actionId: context.step.actionId, status: 'no-basis', reasonCode,
     explanation: '이 조건에서는 분리 근거가 없음', tokens: context.tokens,
-    outputs: [{ port: 'unchanged', stream, condition: stream.condition }], movements, addedTokenIds: [], lostTokenIds: [],
+    outputs: [{ port: 'unchanged', stream }], movements, addedTokenIds: [], lostTokenIds: [],
   };
 }

@@ -23,3 +23,17 @@
 ## 남은 우려
 
 - 후속 분리 규칙 구현에서 `ProcessOutput.condition`과 `ProcessOutput.stream.condition` 중 어느 표현을 정본으로 사용할지 기존 계약과 일관성을 확인해야 합니다. 현재는 두 위치를 함께 제공합니다.
+
+## 리뷰 수정 라운드 1
+
+- `ProcessOutput.condition` 중복 필드를 제거하고 `stream.condition`을 정본으로 통일했습니다.
+- `wait-for-layers`가 물·기름 외 토큰이 포함된 입력을 성공 처리하지 않도록 정확한 물질 집합 검사를 추가했습니다.
+- 운반수 토큰은 `addedTokenIds`로만 기록하고 기존 입력 토큰만 이동 기록에 포함하도록 수정했습니다.
+- 회귀 집중 테스트: `npm run test -- src/simulation/preparation.test.ts` — 4 tests passed
+- 전체 테스트: `npm run test` — 3 files, 10 tests passed
+- 빌드: `npm run build` — 성공
+- 수정 커밋: `fix: tighten preparation token tracking` (최종 SHA는 완료 응답 참조)
+
+### 남은 우려
+
+- 후속 분리 규칙이 `stream.condition`만 사용하도록 동일한 계약을 적용해야 합니다.
