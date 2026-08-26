@@ -8,13 +8,14 @@ export function computeQuality(run: SimulationRun, claims: readonly RecoveryClai
     const initialCount = Object.values(run.tokens).filter((token) => token.materialId === materialId && token.origin === 'initial').length;
     const claim = claims.find((item) => item.materialId === materialId);
     const stream = claim ? run.streams[claim.streamId] : undefined;
-    const claimedIds = new Set(stream?.tokenIds ?? []);
+    const validClaim = Boolean(claim && stream);
+    const claimedIds = new Set(validClaim ? stream?.tokenIds ?? [] : []);
     const recoveredCount = [...claimedIds].filter((id) => run.tokens[id]?.materialId === materialId).length;
     const mixedInCount = [...claimedIds].filter((id) => run.tokens[id]?.materialId !== materialId).length;
     const lostCount = [...lost].filter((id) => run.tokens[id]?.materialId === materialId).length;
-    const unrecoveredCount = run.activeLeafStreamIds.reduce((sum, id) => id === claim?.streamId ? sum : sum + (run.streams[id]?.tokenIds ?? []).filter((tokenId) => run.tokens[tokenId]?.materialId === materialId).length, 0);
+    const unrecoveredCount = run.activeLeafStreamIds.reduce((sum, id) => id === (validClaim ? claim?.streamId : null) ? sum : sum + (run.streams[id]?.tokenIds ?? []).filter((tokenId) => run.tokens[tokenId]?.materialId === materialId).length, 0);
     const recoveredBand = recoveredCount >= Math.ceil(initialCount * 0.8) ? 'mostly' : recoveredCount > 0 ? 'some' : 'almost-none';
-    byTarget[materialId] = { materialId, initialCount, recoveredCount, recoveredBand, mixedInCount, unrecoveredCount, lostCount, claimedStreamId: claim?.streamId ?? null };
+    byTarget[materialId] = { materialId, initialCount, recoveredCount, recoveredBand, mixedInCount, unrecoveredCount, lostCount, claimedStreamId: validClaim ? claim?.streamId ?? null : null };
     totalMixedInCount += mixedInCount;
   }
   return { byTarget, totalMixedInCount, totalLostCount: run.lostTokenIds.length };

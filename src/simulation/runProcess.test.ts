@@ -3,7 +3,7 @@ import { MISSIONS } from '../domain/missions';
 import { buildIntegratedPlan } from '../test/missionBuilders';
 import { getGuidingQuestion } from './feedback';
 import { computeQuality, evaluateRun } from './quality';
-import { runProcess } from './runProcess';
+import { runProcess, validatePlan } from './runProcess';
 
 const integratedClaims = [
   { materialId: 'gravel', streamId: 'step-1:retained' },
@@ -31,5 +31,23 @@ describe('process execution and outcome-based evaluation', () => {
     const mission = MISSIONS['salt-recovery']; const run = runProcess(mission, []);
     const q = getGuidingQuestion(evaluateRun(run, computeQuality(run, [], ['salt']), []), run);
     expect(q).toMatch(/어느 쪽|어떤 성질|무엇이 남/); expect(q).not.toContain('정답 순서'); expect(q.endsWith('?')).toBe(true);
+  });
+  it('treats a missing claim stream as no claim', () => {
+    const mission = MISSIONS['salt-recovery']; const run = runProcess(mission, []);
+    const quality = computeQuality(run, [{ materialId: 'salt', streamId: 'missing-stream' }], ['salt']);
+    expect(quality.byTarget.salt?.claimedStreamId).toBeNull();
+    expect(quality.byTarget.salt?.recoveredCount).toBe(0);
+    expect(evaluateRun(run, quality, mission.requiredPropertyIds).issueCodes).toContain('missing-claim');
+  });
+  it('reports a runtime missing port after a no-basis step', () => {
+    const mission = MISSIONS['integrated-process'];
+    const plan = [{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'fine-gap' } }, { id: 'step-2', actionId: 'add-water', input: { source: 'step', stepId: 'step-1', port: 'pass' }, evidencePropertyId: 'water-solubility', params: {} }] as const;
+    expect(runProcess(mission, plan).planIssues).toEqual(expect.arrayContaining([expect.objectContaining({ stepId: 'step-2', code: 'input-not-found' })]));
+  });
+  it('allows unchanged output after a no-basis step', () => {
+    const mission = MISSIONS['integrated-process'];
+    const plan = [{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'fine-gap' } }, { id: 'step-2', actionId: 'add-water', input: { source: 'step', stepId: 'step-1', port: 'unchanged' }, evidencePropertyId: 'water-solubility', params: {} }] as const;
+    expect(validatePlan(mission, plan, mission.requiredPropertyIds).some((issue) => issue.code === 'input-not-found')).toBe(false);
+    expect(runProcess(mission, plan).outcomes.some((outcome) => outcome.status === 'no-basis')).toBe(true);
   });
 });
