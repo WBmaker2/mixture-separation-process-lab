@@ -28,4 +28,16 @@ describe('local-only persistence', () => {
     expect(loadSession({ getItem: () => JSON.stringify(bad) })).toEqual(createInitialSession());
     expect(loadSession({ getItem: () => JSON.stringify({ ...base, completedStepIds: ['foreign', 'foreign'] }) })).toEqual(createInitialSession());
   });
+  it('rejects unknown nested stream references and inherited map keys', () => {
+    const run = runProcess(MISSIONS['integrated-process'], buildIntegratedPlan());
+    const base: any = { ...createInitialSession(), missionId: 'integrated-process', currentRun: run };
+    const first = run.outcomes[0];
+    const badOutput: any = { ...base, currentRun: { ...run, outcomes: run.outcomes.map((outcome, index) => index === 0 ? { ...outcome, outputs: outcome.outputs.map((output, outputIndex) => outputIndex === 0 ? { ...output, stream: { ...output.stream, id: 'unknown-stream' } } : output) } : outcome) } };
+    expect(loadSession({ getItem: () => JSON.stringify(badOutput) })).toEqual(createInitialSession());
+    const badMovement: any = { ...base, currentRun: { ...run, outcomes: run.outcomes.map((outcome, index) => index === 0 ? { ...outcome, movements: outcome.movements.length ? outcome.movements.map((movement, movementIndex) => movementIndex === 0 ? { ...movement, fromStreamId: 'unknown-stream' } : movement) : outcome.movements } : outcome) } };
+    expect(loadSession({ getItem: () => JSON.stringify(badMovement) })).toEqual(createInitialSession());
+    const inherited: any = { ...base, currentRun: { ...run, movements: run.movements.map((movement, index) => index === 0 ? { ...movement, fromStreamId: 'toString' } : movement) } };
+    expect(loadSession({ getItem: () => JSON.stringify(inherited) })).toEqual(createInitialSession());
+    expect(first).toBeDefined();
+  });
 });
