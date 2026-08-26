@@ -40,4 +40,12 @@ describe('IntakeScreen', () => {
       (mission as { goal: typeof original }).goal = original;
     }
   });
+  it('rejects duplicate integrated targets in both UI and reducer gates', () => {
+    const selectedTargetIds = ['gravel', 'gravel', 'salt'] as const;
+    const state = { ...createInitialSession(), missionId: 'integrated-process' as const, selectedTargetIds };
+    const dispatch = vi.fn();
+    render(<IntakeScreen missionId={state.missionId} selectedTargetIds={selectedTargetIds} attentionActionId={null} dispatch={dispatch} />);
+    expect(screen.getByRole('button', { name: '성질 분석실로' })).toBeDisabled();
+    expect(labReducer(state, { type: 'advance' }).stage).toBe('intake');
+  });
 });

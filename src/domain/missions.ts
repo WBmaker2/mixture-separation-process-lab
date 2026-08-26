@@ -11,6 +11,10 @@ export function getMission(missionId: MissionId): MissionDefinition { return MIS
 export function missionTargetsReady(missionId: MissionId | null, selectedTargetIds: readonly MaterialId[]): boolean {
   if (!missionId) return false;
   const goal = MISSIONS[missionId].goal;
-  if (goal.mode === 'all-components') return selectedTargetIds.length === goal.requiredTargets.length && goal.requiredTargets.every((id) => selectedTargetIds.includes(id));
+  if (goal.mode === 'all-components') {
+    const selected = new Set(selectedTargetIds);
+    const required = new Set(goal.requiredTargets);
+    return selected.size === required.size && selected.size === selectedTargetIds.length && [...required].every((id) => selected.has(id));
+  }
   return selectedTargetIds.length === 1 && goal.selectableTargets.includes(selectedTargetIds[0]);
 }
