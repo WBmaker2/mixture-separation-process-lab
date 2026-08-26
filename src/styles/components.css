@@ -30,6 +30,15 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; } caption { text-align: left; font-weight: 800; margin-bottom: .75rem; } th, td { border: 1px solid #d6e1eb; padding: .7rem; text-align: left; }
 .property-checks { display: grid; gap: .7rem; } .property-checks small { display: block; }
 .action-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; } .action-card { border: 1px solid #d8e4ef; border-radius: .9rem; padding: 1rem; } .action-card p { font-size: .9rem; }
+.action-card-selected { border-color: var(--accent); background: var(--accent-soft); }
+.action-card button { margin-top: 0; width: 100%; }
+.action-card-warning, .broken-warning, .plan-error { color: #a22727; font-weight: 700; }
+.step-config, .process-preview, .process-slot { border: 1px solid #d8e4ef; border-radius: .9rem; padding: 1rem; }
+.step-config label, .process-slot p { display: block; margin: .45rem 0; }
+.process-slot-broken { border: 2px solid #b73535; }
+.slot-controls, .plan-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.slot-controls button, .plan-controls button, .step-config > button { border: 1px solid #9db5c9; border-radius: .6rem; padding: .55rem .75rem; background: #fff; cursor: pointer; }
+.process-preview ol { display: grid; gap: .5rem; }
 .gi-pulse { animation: gi-pulse 1.6s ease-in-out infinite; box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 42%, transparent); }
 @keyframes gi-pulse { 50% { box-shadow: 0 0 0 .55rem transparent; transform: translateY(-1px); } }
 @media (prefers-reduced-motion: reduce) { .gi-pulse { animation: none; box-shadow: 0 0 0 .2rem var(--accent-soft); } }
