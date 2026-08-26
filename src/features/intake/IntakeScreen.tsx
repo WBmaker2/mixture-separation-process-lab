@@ -1,5 +1,5 @@
 import type { Dispatch } from 'react';
-import { MISSION_IDS, MISSIONS } from '../../domain/missions';
+import { MISSION_IDS, MISSIONS, missionTargetsReady } from '../../domain/missions';
 import type { LabAction, AttentionActionId } from '../../state/contracts';
 import type { MissionId, MaterialId } from '../../domain/contracts';
 import { PrimaryAction } from '../../components/PrimaryAction';
@@ -10,9 +10,7 @@ export interface IntakeScreenProps { missionId: MissionId | null; selectedTarget
 
 export function IntakeScreen({ missionId, selectedTargetIds, attentionActionId, dispatch }: IntakeScreenProps) {
   const mission = missionId ? MISSIONS[missionId] : null;
-  const targetsReady = Boolean(mission && (mission.goal.mode === 'all-components'
-    ? selectedTargetIds.length === mission.goal.requiredTargets.length && mission.goal.requiredTargets.every((id) => selectedTargetIds.includes(id))
-    : selectedTargetIds.length === 1 && mission.goal.selectableTargets.includes(selectedTargetIds[0])));
+  const targetsReady = missionTargetsReady(missionId, selectedTargetIds);
   return <section className="screen intake-screen" aria-labelledby="intake-title">
     <div className="hero-copy"><p className="eyebrow">첫 번째 단계</p><h2 id="intake-title">미션을 고르고 목표를 정해요</h2><p>실제 실험을 대체하지 않는 가상 공정 시뮬레이션입니다.</p><p>화면 결과는 교육용 토큰이며 실제 순도나 수율을 보장하지 않습니다.</p><p>실제 실험 결과는 재료·양·기구에 따라 달라질 수 있습니다.</p></div>
     <fieldset><legend>미션을 선택하세요</legend><div className="mission-grid">{MISSION_IDS.map((id) => <label className="choice-card" key={id}><input type="radio" name="mission" value={id} checked={missionId === id} onChange={() => dispatch({ type: 'select-mission', missionId: id })} /> <span><strong>{MISSIONS[id].title}</strong><small>{MISSIONS[id].mixtureLabel}</small></span></label>)}</div></fieldset>

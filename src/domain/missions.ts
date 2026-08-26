@@ -1,4 +1,4 @@
-import type { MissionDefinition, MissionId } from './contracts';
+import type { MaterialId, MissionDefinition, MissionId } from './contracts';
 export const MISSION_IDS = ['size-sort', 'liquid-layers', 'salt-recovery', 'integrated-process'] as const;
 const entries: readonly MissionDefinition[] = [
   { id: 'size-sort', order: 1, title: '크기 선별선', mixtureLabel: '큰 자갈과 고운 모래', initialMaterials: ['gravel', 'sand'], tokensPerMaterial: 10, goal: { mode: 'single-choice', selectableTargets: ['gravel', 'sand'], requiredTargets: [] }, requiredPropertyIds: ['particle-size'], allowedActionIds: ['sieve'], challenge: '알갱이 크기의 차이를 이용해 목표 물질을 골라 회수하세요.' },
@@ -8,3 +8,9 @@ const entries: readonly MissionDefinition[] = [
 ];
 export const MISSIONS = Object.fromEntries(entries.map((item) => [item.id, item])) as Record<MissionId, MissionDefinition>;
 export function getMission(missionId: MissionId): MissionDefinition { return MISSIONS[missionId]; }
+export function missionTargetsReady(missionId: MissionId | null, selectedTargetIds: readonly MaterialId[]): boolean {
+  if (!missionId) return false;
+  const goal = MISSIONS[missionId].goal;
+  if (goal.mode === 'all-components') return selectedTargetIds.length === goal.requiredTargets.length && goal.requiredTargets.every((id) => selectedTargetIds.includes(id));
+  return selectedTargetIds.length === 1 && goal.selectableTargets.includes(selectedTargetIds[0]);
+}

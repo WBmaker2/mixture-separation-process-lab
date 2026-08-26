@@ -2,6 +2,8 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IntakeScreen } from './IntakeScreen';
+import { MISSIONS } from '../../domain/missions';
+import { createInitialSession, labReducer } from '../../state/labReducer';
 
 describe('IntakeScreen', () => {
   afterEach(cleanup);
@@ -23,5 +25,19 @@ describe('IntakeScreen', () => {
     render(<IntakeScreen missionId="size-sort" selectedTargetIds={['salt']} attentionActionId={null} dispatch={dispatch} />);
     expect(screen.getByRole('button', { name: '성질 분석실로' })).toBeDisabled();
     expect(dispatch).not.toHaveBeenCalled();
+  });
+  it('shares the reducer gate when selectable targets differ from initial materials', () => {
+    const mission = MISSIONS['size-sort'];
+    const original = mission.goal;
+    (mission as { goal: typeof original }).goal = { mode: 'single-choice', selectableTargets: ['salt'], requiredTargets: [] };
+    try {
+      const state = { ...createInitialSession(), missionId: 'size-sort' as const, selectedTargetIds: ['gravel' as const] };
+      const dispatch = vi.fn();
+      render(<IntakeScreen missionId={state.missionId} selectedTargetIds={state.selectedTargetIds} attentionActionId={null} dispatch={dispatch} />);
+      expect(screen.getByRole('button', { name: '성질 분석실로' })).toBeDisabled();
+      expect(labReducer(state, { type: 'advance' }).stage).toBe('intake');
+    } finally {
+      (mission as { goal: typeof original }).goal = original;
+    }
   });
 });

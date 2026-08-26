@@ -1,5 +1,5 @@
 import type { MissionId, MaterialId, ProcessStep } from '../domain/contracts';
-import { getMission } from '../domain/missions';
+import { getMission, missionTargetsReady } from '../domain/missions';
 import { computeQuality, evaluateRun } from '../simulation/quality';
 import { runProcess, validatePlan } from '../simulation/runProcess';
 import type { LabAction, LabSession, AttentionActionId } from './contracts';
@@ -8,7 +8,7 @@ const clonePlan = (p: readonly ProcessStep[]) => p.map((s) => ({ ...s, input: { 
 export function createInitialSession(): LabSession { return { schemaVersion: 1, stage: 'intake', attempt: 'initial', missionId: null, selectedTargetIds: [], confirmedPropertyIds: [], draftPlan: [], planHistory: [], initialPlan: null, revisedPlan: null, predictions: {}, completedStepIds: [], currentRun: null, recoveryClaims: [], revisionReason: '', sustainabilityReflection: '' }; }
 function planChange(state: LabSession, plan: readonly ProcessStep[]): LabSession { return { ...state, draftPlan: clonePlan(plan), planHistory: [...state.planHistory, clonePlan(state.draftPlan)] }; }
 function missionTargets(id: MissionId): readonly MaterialId[] { const m = getMission(id); return m.goal.mode === 'all-components' ? [...m.goal.requiredTargets] : []; }
-function targetsOkay(s: LabSession) { if (!s.missionId) return false; const goal = getMission(s.missionId).goal; return goal.mode === 'all-components' ? s.selectedTargetIds.length === goal.requiredTargets.length && goal.requiredTargets.every((x) => s.selectedTargetIds.includes(x)) : s.selectedTargetIds.length === 1 && getMission(s.missionId).initialMaterials.includes(s.selectedTargetIds[0]); }
+function targetsOkay(s: LabSession) { return missionTargetsReady(s.missionId, s.selectedTargetIds); }
 function accepted(s: LabSession) { if (!s.missionId || !s.currentRun) return false; const q = computeQuality(s.currentRun, s.recoveryClaims, s.selectedTargetIds); return evaluateRun(s.currentRun, q, s.confirmedPropertyIds).accepted; }
 function complete(s: LabSession) { const ids = new Set(s.draftPlan.map((p) => p.id)); return s.completedStepIds.length === ids.size && s.completedStepIds.every((id) => ids.has(id)); }
 function startSimulation(s: LabSession): LabSession { if (!s.missionId || !targetsOkay(s) || !s.draftPlan.length || (s.stage !== 'design' && s.stage !== 'revision') || !getMission(s.missionId).requiredPropertyIds.every((p) => s.confirmedPropertyIds.includes(p)) || validatePlan(getMission(s.missionId), s.draftPlan, s.confirmedPropertyIds).length) return s; if (s.stage === 'revision' && (!s.initialPlan || s.revisionReason.trim().length < 10 || JSON.stringify(s.draftPlan) === JSON.stringify(s.initialPlan))) return s; return { ...s, stage: 'simulation', currentRun: runProcess(getMission(s.missionId), s.draftPlan), initialPlan: s.initialPlan ?? clonePlan(s.draftPlan), completedStepIds: [], predictions: {}, recoveryClaims: [] }; }
