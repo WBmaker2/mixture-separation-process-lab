@@ -50,3 +50,10 @@ Fix round 1 검증: focused 11/11, full 54/54, build PASS, `git diff --check` PA
 - integrated plan의 행동 변경 교체 및 경고 포커스 회귀 테스트를 추가했습니다.
 
 Fix round 2 검증: focused/reducer 12/12, full 55/55, build PASS, `git diff --check` PASS, 최대 파일 116줄.
+
+## Fix round 3
+
+- 입력 radio 라벨을 `{목표 단계}단계 입력: {출처 단계}단계의 {출력}` 형식으로 정정했습니다.
+- 2단계 삽입 라벨과 미래 단계 선택지 미노출 회귀 테스트를 추가했습니다.
+
+Fix round 3 검증: focused/reducer 13/13, full 56/56, build PASS, `git diff --check` PASS, 최대 파일 125줄.

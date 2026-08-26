@@ -108,6 +108,15 @@ describe('ProcessBoardScreen', () => {
     expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'replace-step', stepId: 'step-1', replacement: expect.objectContaining({ id: 'step-1', actionId: 'add-water', input: { source: 'initial' } }) }));
   });
 
+  it('labels second-step inputs with target and source step numbers', async () => {
+    const user = userEvent.setup();
+    const plan = [{ id: 'step-1', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } }];
+    render(<ProcessBoardScreen {...baseProps} plan={plan} />);
+    await user.click(screen.getByRole('button', { name: '방법 선택: 체로 분리' }));
+    expect(screen.getByRole('radio', { name: '2단계 입력: 1단계의 통과 물질' })).toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /3단계 입력/ })).not.toBeInTheDocument();
+  });
+
   it('shows only action-relevant missing property guidance', () => {
     render(<ProcessBoardScreen {...baseProps} confirmedPropertyIds={[]} />);
     expect(screen.getByRole('alert')).toHaveTextContent(/알갱이 크기/);
