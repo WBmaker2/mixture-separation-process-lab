@@ -64,10 +64,12 @@ export function applySeparationAction(context: RuleContext): ProcessOutcome {
 
   if (context.step.actionId === 'filtration') {
     if (context.input.condition.waterAdded !== true) return createNoBasisOutcome(context, 'no-filter-contrast');
-    const valid = inputTokens.every((token) => (token.materialId === 'water' && token.phase === 'liquid') || (token.materialId === 'salt' && token.phase === 'dissolved') || (token.materialId !== 'salt' && token.materialId !== 'water' && token.phase === 'solid'));
+    const valid = inputTokens.every((token) => (token.materialId === 'water' && token.phase === 'liquid') || (token.materialId === 'salt' && token.phase === 'dissolved') || ((token.materialId === 'gravel' || token.materialId === 'sand') && token.phase === 'solid'));
     if (!valid) return createNoBasisOutcome(context, 'unsupported-mixture');
+    const hasWater = inputTokens.some((token) => token.materialId === 'water' && token.phase === 'liquid');
     const hasDissolved = inputTokens.some((token) => token.materialId === 'salt' && token.phase === 'dissolved');
     const hasSolid = inputTokens.some((token) => token.materialId !== 'salt' && token.materialId !== 'water' && token.phase === 'solid');
+    if (!hasWater) return createNoBasisOutcome(context, 'unsupported-mixture');
     if (!hasDissolved || !hasSolid) return createNoBasisOutcome(context, 'no-dissolved-solid');
     const smallestDissolvedSalt = inputTokens.filter((token) => token.materialId === 'salt' && token.phase === 'dissolved')[0]?.id;
     for (const token of inputTokens) {

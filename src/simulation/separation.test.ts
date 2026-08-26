@@ -58,6 +58,26 @@ describe('separation rules', () => {
     expect(filtered.outputs[1].stream.tokenIds).toContain('salt-recovery:salt:01');
   });
 
+  it('rejects filtration when waterAdded is true but no liquid water token exists', () => {
+    const state = createInitialSimulation(MISSIONS['salt-recovery']);
+    const tokenIds = ['salt-recovery:salt:01', 'salt-recovery:sand:01'];
+    const tokens = { ...state.tokens, 'salt-recovery:salt:01': { ...state.tokens['salt-recovery:salt:01'], phase: 'dissolved' as const } };
+    const result = applyProcessStep({ missionId: 'salt-recovery', step: { id: 'step-invalid-water', actionId: 'filtration', input: { source: 'initial' }, evidencePropertyId: 'filter-behavior', params: {} }, input: { id: 'invalid-water', tokenIds, condition: { waterAdded: true, layersSettled: false }, consumedByStepId: null }, tokens });
+    expect(result.status).toBe('no-basis');
+    expect(result.reasonCode).toBe('unsupported-mixture');
+    expect(result.outputs[0].stream.tokenIds).toEqual(tokenIds);
+  });
+
+  it('rejects oil even when its phase is incorrectly marked solid', () => {
+    const state = createInitialSimulation(MISSIONS['salt-recovery']);
+    const tokens = { ...state.tokens, 'salt-recovery:salt:01': { ...state.tokens['salt-recovery:salt:01'], phase: 'dissolved' as const }, oil: { id: 'oil', materialId: 'oil' as const, origin: 'initial' as const, phase: 'solid' as const }, 'salt-recovery:water:01': { ...state.tokens['salt-recovery:sand:01'], materialId: 'water' as const, phase: 'liquid' as const } };
+    const tokenIds = ['salt-recovery:salt:01', 'oil', 'salt-recovery:water:01'];
+    const result = applyProcessStep({ missionId: 'salt-recovery', step: { id: 'step-invalid-oil', actionId: 'filtration', input: { source: 'initial' }, evidencePropertyId: 'filter-behavior', params: {} }, input: { id: 'invalid-oil', tokenIds, condition: { waterAdded: true, layersSettled: false }, consumedByStepId: null }, tokens });
+    expect(result.status).toBe('no-basis');
+    expect(result.reasonCode).toBe('unsupported-mixture');
+    expect(result.outputs[0].stream.tokenIds).toEqual(tokenIds);
+  });
+
   it('uses a virtual evaporation output and records one salt token as loss', () => {
     const state = createInitialSimulation(MISSIONS['salt-recovery']);
     const mixed = applyProcessStep({ missionId: 'salt-recovery', step: { id: 'step-1', actionId: 'add-water', input: { source: 'initial' }, evidencePropertyId: 'water-solubility', params: {} }, input: state.streams.initial, tokens: state.tokens });
