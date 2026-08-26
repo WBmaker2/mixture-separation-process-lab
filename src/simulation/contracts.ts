@@ -34,3 +34,11 @@ export interface RuleContext {
   missionId: MissionId; step: ProcessStep; input: MaterialStream;
   tokens: Readonly<Record<string, MaterialToken>>;
 }
+
+export type PlanIssueCode = 'duplicate-step-id' | 'action-not-allowed' | 'property-not-confirmed' | 'invalid-evidence' | 'input-not-found' | 'input-already-consumed' | 'future-input-reference';
+export interface PlanIssue { code: PlanIssueCode; stepId: string; message: string; }
+export interface SimulationRun extends SimulationState { initialTokenIds: readonly string[]; activeLeafStreamIds: readonly string[]; finalLocationByTokenId: Readonly<Record<string, string | 'loss'>>; planIssues: readonly PlanIssue[]; }
+export type QuantityBand = 'mostly' | 'some' | 'almost-none';
+export interface TargetQuality { materialId: MaterialId; initialCount: number; recoveredCount: number; recoveredBand: QuantityBand; mixedInCount: number; unrecoveredCount: number; lostCount: number; claimedStreamId: string | null; }
+export interface QualitySummary { byTarget: Readonly<Partial<Record<MaterialId, TargetQuality>>>; totalMixedInCount: number; totalLostCount: number; }
+export interface RunEvaluation { accepted: boolean; issueCodes: readonly (PlanIssueCode | 'missing-claim' | 'almost-no-recovery' | 'too-much-contamination' | 'no-basis-step' | 'missing-required-property')[]; firstProblemStepId: string | null; }

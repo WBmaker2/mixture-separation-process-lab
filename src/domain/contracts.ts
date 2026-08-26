@@ -30,6 +30,8 @@ export type ProcessStep =
   | { id: string; actionId: 'add-water'; input: StreamRef; evidencePropertyId: 'water-solubility'; params: Record<string, never> }
   | { id: string; actionId: 'wait-for-layers'; input: StreamRef; evidencePropertyId: 'immiscibility'; params: Record<string, never> };
 
+export interface RecoveryClaim { materialId: MaterialId; streamId: string; }
+
 export interface MaterialDefinition {
   id: MaterialId; name: string; colorToken: string; patternLabel: string; shapeLabel: string;
   properties: { state: 'solid' | 'liquid'; particleSize: 'large' | 'fine' | 'not-applicable'; waterRelationship: 'is-water' | 'mixes' | 'does-not-mix' | 'not-applicable'; waterSolubility: 'dissolves' | 'does-not-dissolve' | 'not-applicable'; afterVirtualEvaporation: 'solid-remains' | 'carrier-removed' | 'not-modelled' };
