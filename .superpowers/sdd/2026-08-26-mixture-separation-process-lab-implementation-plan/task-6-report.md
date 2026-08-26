@@ -30,6 +30,13 @@
 - 모든 소스 파일은 500줄 미만입니다.
 - 수정 커밋 SHA는 완료 응답과 progress ledger에 기록합니다.
 
+## 리뷰 수정 라운드 3
+
+- 라운드 2 fix SHA: `53695988721ed39fa73b39e802f0543b7747dcea`
+- `sessionSanitizers.ts`에 계약별 명시적 clone 함수를 추가하고 persistence가 `cloneSession`만 사용하도록 변경했습니다.
+- nested 실행 데이터 검증과 추가 malformed action 회귀 테스트를 보강했습니다.
+- 수정 커밋 SHA는 완료 응답과 progress ledger에 기록합니다.
+
 ## 리뷰 수정 라운드 2
 
 - 라운드 1 fix SHA: `4b214e5b9e22650e43458dbfe6ee62f1040f77cc`
