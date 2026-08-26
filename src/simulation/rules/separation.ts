@@ -1,14 +1,16 @@
 import type { MaterialToken, ProcessOutcome, RuleContext, TokenMovement } from '../contracts';
+import type { OutputPortId } from '../../domain/contracts';
 import { createNoBasisOutcome } from '../noBasis';
 import { outputStreamId } from '../streamRefs';
 
 const byId = (tokens: Readonly<Record<string, MaterialToken>>, ids: readonly string[]) =>
   [...ids].sort((left, right) => left.localeCompare(right)).map((id) => tokens[id]).filter((token): token is MaterialToken => Boolean(token));
+type SeparationPort = Exclude<OutputPortId, 'mixture' | 'layered-mixture' | 'unchanged'>;
 
 function appliedOutcome(
   context: RuleContext,
   tokens: Readonly<Record<string, MaterialToken>>,
-  groups: readonly { port: 'pass' | 'retained' | 'upper' | 'lower' | 'filtrate' | 'filter-residue' | 'vapor-model' | 'solid-residue'; tokenIds: readonly string[] }[],
+  groups: readonly { port: SeparationPort; tokenIds: readonly string[] }[],
   movements: readonly TokenMovement[],
   lostTokenIds: readonly string[],
   explanation: string,
@@ -26,13 +28,15 @@ export function applySeparationAction(context: RuleContext): ProcessOutcome {
   const idsByPort = new Map<string, string[]>();
   const add = (port: string, id: string) => idsByPort.set(port, [...(idsByPort.get(port) ?? []), id]);
   const movements: TokenMovement[] = [];
-  const move = (token: MaterialToken, port: string, reason: string) => {
-    const destination = outputStreamId(context.step.id, port as never);
+  const move = (token: MaterialToken, port: SeparationPort, reason: string) => {
+    const destination = outputStreamId(context.step.id, port);
     add(port, token.id);
     movements.push({ tokenId: token.id, stepId: context.step.id, fromStreamId: context.input.id, toStreamId: destination, reason });
   };
 
   if (context.step.actionId === 'sieve') {
+    const materials = new Set(inputTokens.map((token) => token.materialId));
+    if (materials.size !== 2 || !materials.has('gravel') || !materials.has('sand')) return createNoBasisOutcome(context, 'unsupported-mixture');
     if (context.step.params.gap === 'fine-gap') return createNoBasisOutcome(context, 'no-size-contrast');
     const smallestSand = inputTokens.filter((token) => token.materialId === 'sand')[0]?.id;
     for (const token of inputTokens) move(token, token.materialId === 'gravel' || token.id === smallestSand ? 'retained' : 'pass', 'particle-size');
@@ -44,10 +48,12 @@ export function applySeparationAction(context: RuleContext): ProcessOutcome {
 
   if (context.step.actionId === 'layer-separation') {
     if (context.input.condition.layersSettled !== true) return createNoBasisOutcome(context, 'layers-not-settled');
+    const materials = new Set(inputTokens.map((token) => token.materialId));
+    if (materials.size !== 2 || !materials.has('water') || !materials.has('oil')) return createNoBasisOutcome(context, 'unsupported-mixture');
     const smallestWater = inputTokens.filter((token) => token.materialId === 'water')[0]?.id;
     const smallestOil = inputTokens.filter((token) => token.materialId === 'oil')[0]?.id;
     for (const token of inputTokens) {
-      const port = token.materialId === 'water' ? (token.id === smallestWater ? 'upper' : 'lower') : (token.id === smallestOil ? 'lower' : 'upper');
+      const port: SeparationPort = token.materialId === 'water' ? (token.id === smallestWater ? 'upper' : 'lower') : (token.id === smallestOil ? 'lower' : 'upper');
       move(token, port, 'immiscibility');
     }
     return appliedOutcome(context, context.tokens, [
@@ -57,9 +63,11 @@ export function applySeparationAction(context: RuleContext): ProcessOutcome {
   }
 
   if (context.step.actionId === 'filtration') {
-    const hasDissolved = inputTokens.some((token) => token.materialId === 'salt' && token.phase === 'dissolved');
-    const hasSolid = inputTokens.some((token) => token.phase === 'solid');
     if (context.input.condition.waterAdded !== true) return createNoBasisOutcome(context, 'no-filter-contrast');
+    const valid = inputTokens.every((token) => (token.materialId === 'water' && token.phase === 'liquid') || (token.materialId === 'salt' && token.phase === 'dissolved') || (token.materialId !== 'salt' && token.materialId !== 'water' && token.phase === 'solid'));
+    if (!valid) return createNoBasisOutcome(context, 'unsupported-mixture');
+    const hasDissolved = inputTokens.some((token) => token.materialId === 'salt' && token.phase === 'dissolved');
+    const hasSolid = inputTokens.some((token) => token.materialId !== 'salt' && token.materialId !== 'water' && token.phase === 'solid');
     if (!hasDissolved || !hasSolid) return createNoBasisOutcome(context, 'no-dissolved-solid');
     const smallestDissolvedSalt = inputTokens.filter((token) => token.materialId === 'salt' && token.phase === 'dissolved')[0]?.id;
     for (const token of inputTokens) {
@@ -73,8 +81,10 @@ export function applySeparationAction(context: RuleContext): ProcessOutcome {
   }
 
   if (context.step.actionId === 'virtual-evaporation') {
+    const valid = inputTokens.every((token) => (token.materialId === 'water' && token.phase === 'liquid') || (token.materialId === 'salt' && token.phase === 'dissolved'));
+    if (!valid) return createNoBasisOutcome(context, 'unsupported-mixture');
     const hasDissolvedSalt = inputTokens.some((token) => token.materialId === 'salt' && token.phase === 'dissolved');
-    const hasWater = inputTokens.some((token) => token.materialId === 'water');
+    const hasWater = inputTokens.some((token) => token.materialId === 'water' && token.phase === 'liquid');
     if (!hasDissolvedSalt || !hasWater) return createNoBasisOutcome(context, 'no-dissolved-solid');
     const smallestSalt = inputTokens.filter((token) => token.materialId === 'salt' && token.phase === 'dissolved')[0]?.id;
     const nextTokens: Record<string, MaterialToken> = { ...context.tokens };
