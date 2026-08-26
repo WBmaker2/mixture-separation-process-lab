@@ -30,7 +30,7 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
   const replaceIndex = replaceId ? plan.findIndex((step) => step.id === replaceId) : -1;
   const targetIndex = replaceIndex >= 0 ? replaceIndex : plan.length;
   const validIssues = useMemo(() => validatePlan(mission, plan, confirmedPropertyIds), [mission, plan, confirmedPropertyIds]);
-  const selectAction = (id: ProcessActionId) => { setSelected(id); setInputPort(plan.length ? '' : 'initial'); setReplaceId(null); };
+  const selectAction = (id: ProcessActionId) => { setSelected(id); setInputPort(replaceId ? inputPort : plan.length ? '' : 'initial'); };
   const addOrReplace = () => {
     if (!selected) return;
     const existing = replaceIndex >= 0 ? plan[replaceIndex] : null;

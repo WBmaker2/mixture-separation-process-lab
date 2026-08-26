@@ -42,3 +42,11 @@
 - 회귀 테스트 3건을 추가했습니다(교체 입력 보존, 미래 입력 미노출, 미래/삭제 참조 경고, 미션별 안내).
 
 Fix round 1 검증: focused 11/11, full 54/54, build PASS, `git diff --check` PASS, 최대 파일 104줄.
+
+## Fix round 2
+
+- 기존 단계의 `교체` 모드에서 다른 허용 행동 카드를 선택해도 `replace-step`과 기존 ID·입력 참조를 유지합니다.
+- 끊어진 입력 경고를 `tabIndex=0`으로 만들어 키보드 포커스가 가능하도록 했습니다.
+- integrated plan의 행동 변경 교체 및 경고 포커스 회귀 테스트를 추가했습니다.
+
+Fix round 2 검증: focused/reducer 12/12, full 55/55, build PASS, `git diff --check` PASS, 최대 파일 116줄.
