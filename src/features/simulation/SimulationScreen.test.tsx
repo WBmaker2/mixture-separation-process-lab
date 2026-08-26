@@ -51,4 +51,10 @@ describe('SimulationScreen', () => {
     expect(screen.getByLabelText('전 상태에서 후 상태로')).toBeVisible();
     expect(screen.queryByTestId('moving-token-layer')).not.toBeInTheDocument();
   });
+
+  it('uses a learner-facing label for unchanged predictions', () => {
+    renderScreen();
+    expect(screen.getByRole('radio', { name: '변화 없음' })).toBeInTheDocument();
+    expect(screen.queryByText('unchanged')).not.toBeInTheDocument();
+  });
 });

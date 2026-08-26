@@ -12,5 +12,6 @@ const questions: Record<ProcessStep['actionId'], string> = {
 
 export interface PredictionPromptProps { step: ProcessStep; candidatePorts: readonly OutputPortId[]; selectedPort?: OutputPortId | undefined; onSelect: (port: OutputPortId) => void; }
 export function PredictionPrompt({ step, candidatePorts, selectedPort, onSelect }: PredictionPromptProps) {
-  return <fieldset className="prediction-prompt"><legend>{questions[step.actionId]}</legend>{candidatePorts.map((port) => <label key={port}><input type="radio" name={`prediction-${step.id}`} value={port} checked={selectedPort === port} onChange={() => onSelect(port)} />{ACTIONS[step.actionId].outputLabels[candidatePorts.indexOf(port)] ?? port}{step.actionId === 'sieve' && port === 'retained' ? ' (자갈은 잔류)' : ''}</label>)}</fieldset>;
+  const labels: Record<OutputPortId, string> = { pass: '통과', retained: '잔류', upper: '위층', lower: '아래층', filtrate: '거른 액체', 'filter-residue': '거름 찌꺼기', mixture: '섞인 물질함', 'layered-mixture': '층이 생긴 물질함', 'vapor-model': '수증기 모형', 'solid-residue': '고체 잔류', unchanged: '변화 없음' };
+  return <fieldset className="prediction-prompt"><legend>{questions[step.actionId]}</legend>{candidatePorts.map((port) => <label key={port}><input type="radio" name={`prediction-${step.id}`} value={port} checked={selectedPort === port} onChange={() => onSelect(port)} />{labels[port] ?? ACTIONS[step.actionId].name}{step.actionId === 'sieve' && port === 'retained' ? ' (자갈은 잔류)' : ''}</label>)}</fieldset>;
 }
