@@ -57,3 +57,11 @@ Fix round 2 검증: focused/reducer 12/12, full 55/55, build PASS, `git diff --c
 - 2단계 삽입 라벨과 미래 단계 선택지 미노출 회귀 테스트를 추가했습니다.
 
 Fix round 3 검증: focused/reducer 13/13, full 56/56, build PASS, `git diff --check` PASS, 최대 파일 125줄.
+
+## Fix round 4
+
+- `ProcessPreview`에 인접 단계 사이에만 aria-hidden 세로 화살표 연결자를 추가했습니다.
+- 연결자는 마지막 단계 뒤에 렌더링되지 않으며, 단계별 예상 출력 라벨과 토큰/성공 수치 비공개 원칙을 유지합니다.
+- 2단계 미리보기 연결자 회귀 테스트를 추가했습니다.
+
+Fix round 4 검증: focused/reducer 14/14, full 57/57, build PASS, `git diff --check` PASS, 최대 파일 135줄.

@@ -6,6 +6,6 @@ const labels: Record<string, string> = { pass: '통과 물질', retained: '잔�
 export interface ProcessPreviewProps { plan: readonly ProcessStep[]; }
 export function ProcessPreview({ plan }: ProcessPreviewProps) {
   return <section className="process-preview" aria-labelledby="preview-title"><h3 id="preview-title">공정 미리보기</h3>
-    {plan.length === 0 ? <p>아직 넣은 단계가 없습니다.</p> : <ol>{plan.map((step) => <li key={step.id}><strong>{ACTIONS[step.actionId].name}</strong><span aria-hidden="true"> → </span>{getExpectedPorts(step.actionId).map((port) => labels[port]).join(' · ')}</li>)}</ol>}
+    {plan.length === 0 ? <p>아직 넣은 단계가 없습니다.</p> : <ol>{plan.map((step, index) => <>{<li key={step.id}><strong>{ACTIONS[step.actionId].name}</strong> · {getExpectedPorts(step.actionId).map((port) => labels[port]).join(' · ')}</li>}{index < plan.length - 1 && <li className="preview-connector" data-testid="preview-connector" aria-hidden="true">↓</li>}</>)}</ol>}
   </section>;
 }

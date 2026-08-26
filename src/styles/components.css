@@ -39,6 +39,8 @@ table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; } caption { te
 .slot-controls, .plan-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
 .slot-controls button, .plan-controls button, .step-config > button { border: 1px solid #9db5c9; border-radius: .6rem; padding: .55rem .75rem; background: #fff; cursor: pointer; }
 .process-preview ol { display: grid; gap: .5rem; }
+.preview-item { display: contents; }
+.preview-connector { display: block; color: var(--accent); font-size: 1.35rem; font-weight: 800; text-align: center; }
 .gi-pulse { animation: gi-pulse 1.6s ease-in-out infinite; box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 42%, transparent); }
 @keyframes gi-pulse { 50% { box-shadow: 0 0 0 .55rem transparent; transform: translateY(-1px); } }
 @media (prefers-reduced-motion: reduce) { .gi-pulse { animation: none; box-shadow: 0 0 0 .2rem var(--accent-soft); } }

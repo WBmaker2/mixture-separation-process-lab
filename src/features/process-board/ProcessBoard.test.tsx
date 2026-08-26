@@ -117,6 +117,16 @@ describe('ProcessBoardScreen', () => {
     expect(screen.queryByRole('radio', { name: /3단계 입력/ })).not.toBeInTheDocument();
   });
 
+  it('shows connectors only between adjacent preview steps', () => {
+    const plan = [
+      { id: 'step-1', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } },
+      { id: 'step-2', actionId: 'sieve' as const, input: { source: 'step' as const, stepId: 'step-1', port: 'pass' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } },
+    ];
+    render(<ProcessBoardScreen {...baseProps} plan={plan} />);
+    expect(screen.getAllByTestId('preview-connector')).toHaveLength(1);
+    expect(screen.getAllByText(/체로 분리/).length).toBeGreaterThanOrEqual(2);
+  });
+
   it('shows only action-relevant missing property guidance', () => {
     render(<ProcessBoardScreen {...baseProps} confirmedPropertyIds={[]} />);
     expect(screen.getByRole('alert')).toHaveTextContent(/알갱이 크기/);
