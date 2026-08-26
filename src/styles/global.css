@@ -1,0 +1,15 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2rem;
+}
