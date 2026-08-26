@@ -20,6 +20,17 @@ describe('separation rules', () => {
     expect(result.outputs[1].stream.tokenIds).toContain('size-sort:sand:01');
   });
 
+  it('separates the integrated gravel, sand, and salt mixture with a wide gap', () => {
+    const state = createInitialSimulation(MISSIONS['integrated-process']);
+    const result = applyProcessStep({ missionId: 'integrated-process', step: { id: 'step-integrated-sieve', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'wide-gap' } }, input: state.streams.initial, tokens: state.tokens });
+    expect(result.status).toBe('applied');
+    expect(result.outputs.map((item) => item.port)).toEqual(['pass', 'retained']);
+    expectExactLedger(result, state.streams.initial.tokenIds);
+    expect(result.outputs[0].stream.tokenIds).toContain('integrated-process:salt:01');
+    expect(result.outputs[1].stream.tokenIds).toContain('integrated-process:gravel:01');
+    expect(result.outputs[1].stream.tokenIds).toContain('integrated-process:sand:01');
+  });
+
   it('returns unchanged when the fine gap retains both solids', () => {
     const state = createInitialSimulation(MISSIONS['size-sort']);
     const result = applyProcessStep({ missionId: 'size-sort', step: { id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'fine-gap' } }, input: state.streams.initial, tokens: state.tokens });

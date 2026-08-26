@@ -36,7 +36,8 @@ export function applySeparationAction(context: RuleContext): ProcessOutcome {
 
   if (context.step.actionId === 'sieve') {
     const materials = new Set(inputTokens.map((token) => token.materialId));
-    if (materials.size !== 2 || !materials.has('gravel') || !materials.has('sand')) return createNoBasisOutcome(context, 'unsupported-mixture');
+    const valid = inputTokens.every((token) => (token.materialId === 'gravel' || token.materialId === 'sand' || token.materialId === 'salt') && token.phase === 'solid');
+    if (!valid || !materials.has('gravel') || !materials.has('sand')) return createNoBasisOutcome(context, 'unsupported-mixture');
     if (context.step.params.gap === 'fine-gap') return createNoBasisOutcome(context, 'no-size-contrast');
     const smallestSand = inputTokens.filter((token) => token.materialId === 'sand')[0]?.id;
     for (const token of inputTokens) move(token, token.materialId === 'gravel' || token.id === smallestSand ? 'retained' : 'pass', 'particle-size');
