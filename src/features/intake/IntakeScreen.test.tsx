@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { IntakeScreen } from './IntakeScreen';
 
 describe('IntakeScreen', () => {
+  afterEach(cleanup);
   it('offers four missions and a target without asking for a name', async () => {
     const user = userEvent.setup(); const dispatch = vi.fn();
     render(<IntakeScreen missionId={null} selectedTargetIds={[]} attentionActionId="select-mission" dispatch={dispatch} />);
@@ -16,5 +17,11 @@ describe('IntakeScreen', () => {
     render(<IntakeScreen missionId="size-sort" selectedTargetIds={['sand']} attentionActionId={null} dispatch={vi.fn()} />);
     expect(screen.getByLabelText('큰 자갈, 큰 점박이 무늬, 둥근 다각형 모양')).toBeInTheDocument();
     expect(screen.getByLabelText('고운 모래, 잔점 무늬, 작은 원 모양')).toBeInTheDocument();
+  });
+  it('does not advance with a target outside the selected mission', () => {
+    const dispatch = vi.fn();
+    render(<IntakeScreen missionId="size-sort" selectedTargetIds={['salt']} attentionActionId={null} dispatch={dispatch} />);
+    expect(screen.getByRole('button', { name: '성질 분석실로' })).toBeDisabled();
+    expect(dispatch).not.toHaveBeenCalled();
   });
 });
