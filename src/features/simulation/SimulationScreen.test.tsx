@@ -50,6 +50,7 @@ describe('SimulationScreen', () => {
     expect(screen.getByTestId('after-scene')).toBeVisible();
     expect(screen.getByLabelText('전 상태에서 후 상태로')).toBeVisible();
     expect(screen.queryByTestId('moving-token-layer')).not.toBeInTheDocument();
+    expect(screen.queryByText('step-1 실행 결과')).not.toBeInTheDocument();
   });
 
   it('uses a learner-facing label for unchanged predictions', () => {
