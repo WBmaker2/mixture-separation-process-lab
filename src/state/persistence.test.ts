@@ -40,4 +40,11 @@ describe('local-only persistence', () => {
     expect(loadSession({ getItem: () => JSON.stringify(inherited) })).toEqual(createInitialSession());
     expect(first).toBeDefined();
   });
+  it('rejects nested output streams consumed by unknown outcome steps and orphaned runs', () => {
+    const run = runProcess(MISSIONS['integrated-process'], buildIntegratedPlan());
+    const base: any = { ...createInitialSession(), missionId: 'integrated-process', currentRun: run };
+    const polluted: any = { ...base, currentRun: { ...run, outcomes: run.outcomes.map((outcome, index) => index === 0 ? { ...outcome, outputs: outcome.outputs.map((output, outputIndex) => outputIndex === 0 ? { ...output, stream: { ...output.stream, consumedByStepId: 'unknown-step' } } : output) } : outcome) } };
+    expect(loadSession({ getItem: () => JSON.stringify(polluted) })).toEqual(createInitialSession());
+    expect(loadSession({ getItem: () => JSON.stringify({ ...base, missionId: null }) })).toEqual(createInitialSession());
+  });
 });
