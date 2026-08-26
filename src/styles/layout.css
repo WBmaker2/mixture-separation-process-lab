@@ -1,3 +1,4 @@
 .process-board-screen { display: grid; gap: 1.25rem; }
 .action-cards, .process-slots { margin: 0; padding: 0; }
 .process-slots { display: grid; gap: .75rem; list-style-position: inside; }
+.simulation-screen { display: grid; gap: 1rem; }

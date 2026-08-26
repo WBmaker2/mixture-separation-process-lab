@@ -44,3 +44,11 @@ table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; } caption { te
 @keyframes gi-pulse { 50% { box-shadow: 0 0 0 .55rem transparent; transform: translateY(-1px); } }
 @media (prefers-reduced-motion: reduce) { .gi-pulse { animation: none; box-shadow: 0 0 0 .2rem var(--accent-soft); } }
 @media (max-width: 560px) { .app-header { align-items: flex-start; } table { font-size: .78rem; } th, td { padding: .45rem; } }
+.prediction-prompt { display: grid; gap: .65rem; }
+.prediction-prompt label { display: block; padding: .6rem; border: 1px solid #d8e4ef; border-radius: .5rem; }
+.live-region { min-height: 1.5rem; font-weight: 700; }
+.movement-scenes { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; }
+.movement-scene { border: 1px solid #d8e4ef; border-radius: .8rem; padding: 1rem; }
+.scene-arrow { font-size: 2rem; color: var(--accent); }
+.simulation-preview { margin-top: 1.5rem; }
+@media (max-width: 560px) { .movement-scenes { grid-template-columns: 1fr; } .scene-arrow { transform: rotate(90deg); text-align: center; } }
