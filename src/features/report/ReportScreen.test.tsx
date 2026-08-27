@@ -24,6 +24,8 @@ describe('ReportScreen', () => {
     expect(printButton).toHaveClass('gi-pulse');
     expect(screen.getByRole('heading', { name: /체로 분리/ })).toBeVisible();
     expect(screen.getByText('첫 공정으로 학습 조건을 충족했습니다.')).toBeVisible();
+    expect(screen.getByRole('heading', { name: '완료 근거' })).toBeVisible();
+    expect(screen.getByText('첫 공정에서 크기 차이를 이용해 목표를 회수했습니다.')).toBeVisible();
     await user.click(printButton); expect(onPrint).toHaveBeenCalledOnce();
   });
 });
