@@ -12,11 +12,19 @@ import { ProcessPreview } from './ProcessPreview';
 
 export interface ProcessBoardScreenProps { missionId: MissionId; confirmedPropertyIds: readonly PropertyId[]; plan: readonly ProcessStep[]; initialPlan: readonly ProcessStep[] | null; revisionReason?: string; showRevisionReason?: boolean; planHistoryDepth: number; attentionActionId: AttentionActionId | null; dispatch: Dispatch<LabAction>; }
 const portLabels: Record<string, string> = { pass: '통과 물질', retained: '잔류 물질', upper: '위층', lower: '아래층', filtrate: '거른 액체', 'filter-residue': '거름 찌꺼기', 'vapor-model': '수증기 모형', 'solid-residue': '고체 잔류', mixture: '섞인 물질함', 'layered-mixture': '층이 생긴 물질함' };
+const EVIDENCE_PROPERTY_BY_ACTION: Readonly<Record<ProcessActionId, PropertyId>> = {
+  sieve: 'particle-size',
+  'layer-separation': 'immiscibility',
+  filtration: 'filter-behavior',
+  'virtual-evaporation': 'evaporation-residue',
+  'add-water': 'water-solubility',
+  'wait-for-layers': 'immiscibility',
+};
 const actionIds = Object.keys(ACTIONS) as ProcessActionId[];
 const inputStepId = (input: StreamRef) => input.source === 'step' ? input.stepId : null;
 const brokenReference = (input: StreamRef, consumerIndex: number, plan: readonly ProcessStep[]) => { const id = inputStepId(input); if (!id) return false; const referencedIndex = plan.findIndex((step) => step.id === id); return referencedIndex < 0 || referencedIndex >= consumerIndex; };
 const nextId = (plan: readonly ProcessStep[]) => `step-${Math.max(0, ...plan.map((x) => Number(x.id.replace('step-', '')) || 0)) + 1}`;
-function evidenceFor(id: ProcessActionId): PropertyId { return ACTIONS[id].requiredPropertyIds[0]; }
+function evidenceFor(id: ProcessActionId): PropertyId { return EVIDENCE_PROPERTY_BY_ACTION[id]; }
 function makeStep(id: string, actionId: ProcessActionId, input: StreamRef, gap: SieveGap): ProcessStep {
   const params = actionId === 'sieve' ? { gap } : {};
   return { id, actionId, input, evidencePropertyId: evidenceFor(actionId), params } as ProcessStep;

@@ -108,6 +108,53 @@ describe('ProcessBoardScreen', () => {
     expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'replace-step', stepId: 'step-1', replacement: expect.objectContaining({ id: 'step-1', actionId: 'add-water', input: { source: 'initial' } }) }));
   });
 
+  it('uses filtration evidence for both new and replacement steps', async () => {
+    const user = userEvent.setup();
+    const confirmedPropertyIds = ['particle-size', 'water-solubility', 'filter-behavior', 'evaporation-residue'] as const;
+    const dispatch = vi.fn();
+    const { unmount } = render(
+      <ProcessBoardScreen
+        {...baseProps}
+        missionId="integrated-process"
+        confirmedPropertyIds={confirmedPropertyIds}
+        dispatch={dispatch}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '방법 선택: 거르기' }));
+    await user.click(screen.getByRole('button', { name: '1단계에 넣기' }));
+    expect(dispatch).toHaveBeenCalledWith({
+      type: 'add-step',
+      step: {
+        id: 'step-1',
+        actionId: 'filtration',
+        input: { source: 'initial' },
+        evidencePropertyId: 'filter-behavior',
+        params: {},
+      },
+    });
+    unmount();
+
+    dispatch.mockClear();
+    render(
+      <ProcessBoardScreen
+        {...baseProps}
+        missionId="integrated-process"
+        confirmedPropertyIds={confirmedPropertyIds}
+        plan={[{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'wide-gap' } }]}
+        dispatch={dispatch}
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: '1단계 교체' }));
+    await user.click(screen.getByRole('button', { name: '방법 선택: 거르기' }));
+    await user.click(screen.getByRole('button', { name: '교체하기' }));
+    expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({
+      type: 'replace-step',
+      stepId: 'step-1',
+      replacement: expect.objectContaining({ actionId: 'filtration', evidencePropertyId: 'filter-behavior' }),
+    }));
+  });
+
   it('labels second-step inputs with target and source step numbers', async () => {
     const user = userEvent.setup();
     const plan = [{ id: 'step-1', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } }];

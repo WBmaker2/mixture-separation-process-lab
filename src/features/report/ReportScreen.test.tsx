@@ -28,4 +28,12 @@ describe('ReportScreen', () => {
     expect(screen.getByText('첫 공정에서 크기 차이를 이용해 목표를 회수했습니다.')).toBeVisible();
     await user.click(printButton); expect(onPrint).toHaveBeenCalledOnce();
   });
+
+  it('shows a status guard when the integrated report has empty plans', () => {
+    render(<ReportScreen mission={MISSIONS['integrated-process']} selectedTargetIds={['gravel', 'sand', 'salt']} initialPlan={[]} revisedPlan={[]} revisionReason="" sustainabilityReflection="" quality={null} onSustainabilityChange={vi.fn()} onPrint={vi.fn()} onReset={vi.fn()} />);
+    expect(screen.getByRole('heading', { name: '통합 공정 보고서 준비 중' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: '통합 공정 완료 보고서' })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('공정 비교 자료를 준비하고 있습니다.');
+    expect(screen.queryByTestId('mission-complete')).not.toBeInTheDocument();
+  });
 });

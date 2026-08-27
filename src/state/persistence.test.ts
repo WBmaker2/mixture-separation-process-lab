@@ -47,4 +47,17 @@ describe('local-only persistence', () => {
     expect(loadSession({ getItem: () => JSON.stringify(polluted) })).toEqual(createInitialSession());
     expect(loadSession({ getItem: () => JSON.stringify({ ...base, missionId: null }) })).toEqual(createInitialSession());
   });
+  it('resets sessions with __proto__ stream references', () => {
+    const run = runProcess(MISSIONS['integrated-process'], buildIntegratedPlan());
+    const base: any = { ...createInitialSession(), missionId: 'integrated-process', currentRun: run };
+    const movementFrom: any = { ...base, currentRun: { ...run, movements: run.movements.map((movement, index) => index === 0 ? { ...movement, fromStreamId: '__proto__' } : movement) } };
+    const movementTo: any = { ...base, currentRun: { ...run, movements: run.movements.map((movement, index) => index === 0 ? { ...movement, toStreamId: '__proto__' } : movement) } };
+    const activeLeaf: any = { ...base, currentRun: { ...run, activeLeafStreamIds: ['__proto__'] } };
+    const tokenId = run.initialTokenIds[0];
+    const finalLocation: any = { ...base, currentRun: { ...run, finalLocationByTokenId: { ...run.finalLocationByTokenId, [tokenId]: '__proto__' } } };
+    expect(loadSession({ getItem: () => JSON.stringify(movementFrom) })).toEqual(createInitialSession());
+    expect(loadSession({ getItem: () => JSON.stringify(movementTo) })).toEqual(createInitialSession());
+    expect(loadSession({ getItem: () => JSON.stringify(activeLeaf) })).toEqual(createInitialSession());
+    expect(loadSession({ getItem: () => JSON.stringify(finalLocation) })).toEqual(createInitialSession());
+  });
 });
