@@ -6,6 +6,8 @@
 
 진행 기록은 학생 이름·실명·이메일 없이 브라우저 `localStorage`에만 저장됩니다. 키보드와 375px 화면, 스크린 리더 상태, `prefers-reduced-motion`을 지원합니다. 보고서의 업데이트 내역 버튼에서 변경 기록을 확인할 수 있습니다.
 
+GitHub Pages 배포 주소: <https://wbmaker2.github.io/mixture-separation-process-lab/>
+
 ```bash
 npm ci
 npm run dev
