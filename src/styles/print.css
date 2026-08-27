@@ -1,0 +1,6 @@
+@media print {
+  .stage-nav, .app-header, .update-history-trigger, .update-history-panel, .report-actions, button { display: none !important; }
+  .app-shell { max-width: none; padding: 0; } .screen { border: 0; box-shadow: none; margin: 0; }
+  .process-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .comparison-step, .quality-ledger { break-inside: avoid; } .virtual-model-notice { border: 2px solid #000; padding: .75rem; }
+}
