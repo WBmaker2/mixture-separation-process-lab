@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MISSIONS } from '../../domain/missions';
 import { runProcess } from '../../simulation/runProcess';
 import { buildIntegratedPlan } from '../../test/missionBuilders';
+import { computeQuality } from '../../simulation/quality';
 import { QualityScreen } from './QualityScreen';
 
 describe('QualityScreen', () => {
@@ -39,5 +40,12 @@ describe('QualityScreen', () => {
     expect(screen.queryByText(/정답 공정|정답 순서/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '문제 단계 수정하기' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'begin-revision' });
+  });
+
+  it('fails closed for consumed and unknown recovery streams', () => {
+    const mission = MISSIONS['integrated-process'];
+    const run = runProcess(mission, buildIntegratedPlan());
+    expect(computeQuality(run, [{ materialId: 'gravel', streamId: 'initial' }], ['gravel']).byTarget.gravel?.claimedStreamId).toBeNull();
+    expect(computeQuality(run, [{ materialId: 'gravel', streamId: 'made-up' }], ['gravel']).byTarget.gravel?.claimedStreamId).toBeNull();
   });
 });

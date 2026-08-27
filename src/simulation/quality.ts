@@ -6,7 +6,7 @@ export function computeQuality(run: SimulationRun, claims: readonly RecoveryClai
   const lost = new Set(run.lostTokenIds);
   for (const materialId of targetIds) {
     const initialCount = Object.values(run.tokens).filter((token) => token.materialId === materialId && token.origin === 'initial').length;
-    const claim = claims.find((item) => item.materialId === materialId);
+    const claim = claims.find((item) => item.materialId === materialId && run.activeLeafStreamIds.includes(item.streamId) && Boolean(run.streams[item.streamId]));
     const stream = claim ? run.streams[claim.streamId] : undefined;
     const validClaim = Boolean(claim && stream);
     const claimedIds = new Set(validClaim ? stream?.tokenIds ?? [] : []);

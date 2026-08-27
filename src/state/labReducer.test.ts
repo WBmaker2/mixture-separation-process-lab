@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { buildIntegratedPlan } from '../test/missionBuilders';
+import { MISSIONS } from '../domain/missions';
 import { createInitialSession, getAttentionActionId, labReducer } from './labReducer';
 import type { LabSession } from './contracts';
+import { runProcess } from '../simulation/runProcess';
 
 describe('labReducer', () => {
   it('enforces mission then target then properties before design', () => {
@@ -37,5 +39,11 @@ describe('labReducer', () => {
     const plan = buildIntegratedPlan();
     const state: LabSession = { ...createInitialSession(), stage: 'revision', attempt: 'revised', missionId: 'integrated-process', selectedTargetIds: ['gravel', 'sand', 'salt'], initialPlan: plan, draftPlan: plan, revisionReason: '소금의 위치를 다시 확인했습니다.' };
     expect(labReducer(state, { type: 'finish-revision' }).stage).toBe('revision');
+  });
+  it('clears stale or non-target recovery claims', () => {
+    const plan = buildIntegratedPlan();
+    const currentRun = runProcess(MISSIONS['integrated-process'], plan);
+    const state: LabSession = { ...createInitialSession(), stage: 'quality', missionId: 'integrated-process', selectedTargetIds: ['gravel', 'sand', 'salt'], currentRun, recoveryClaims: [{ materialId: 'gravel', streamId: 'initial' }] };
+    expect(labReducer(state, { type: 'set-recovery-claim', claim: { materialId: 'gravel', streamId: 'unknown' } }).recoveryClaims).toEqual([]);
   });
 });

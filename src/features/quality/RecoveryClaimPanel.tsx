@@ -15,7 +15,8 @@ function streamLabel(id: string, run: SimulationRun) {
   return `${step.replace('step-', '')}단계 ${portNames[port] ?? port}: ${contents}`;
 }
 export function RecoveryClaimPanel({ mission, run, claims, targetIds, dispatch }: RecoveryClaimPanelProps) {
-  const targets = targetIds ?? (mission.goal.mode === 'all-components' ? mission.goal.requiredTargets : [claims[0]?.materialId ?? mission.goal.selectableTargets[0]]);
+  const allowed = mission.goal.mode === 'all-components' ? mission.goal.requiredTargets : mission.goal.selectableTargets;
+  const targets = (targetIds ?? allowed).filter((id, index, ids) => allowed.includes(id) && ids.indexOf(id) === index);
   return <section aria-labelledby="claim-title" className="recovery-claims"><h3 id="claim-title">목표 물질이 남은 물질함을 고르세요</h3>
     {targets.map((materialId) => { const current = claims.find((claim) => claim.materialId === materialId)?.streamId ?? ''; return <label key={materialId} htmlFor={`claim-${materialId}`}>{MATERIALS[materialId].name} 회수 물질함<select id={`claim-${materialId}`} value={current} onChange={(event) => dispatch({ type: 'set-recovery-claim', claim: { materialId, streamId: event.target.value } })}><option value="">회수 물질함을 고르세요</option>{run.activeLeafStreamIds.map((id) => <option key={id} value={id}>{streamLabel(id, run)}</option>)}</select></label>; })}
   </section>;

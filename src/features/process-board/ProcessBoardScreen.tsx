@@ -30,6 +30,8 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
   const replaceIndex = replaceId ? plan.findIndex((step) => step.id === replaceId) : -1;
   const targetIndex = replaceIndex >= 0 ? replaceIndex : plan.length;
   const validIssues = useMemo(() => validatePlan(mission, plan, confirmedPropertyIds), [mission, plan, confirmedPropertyIds]);
+  const unchangedRevision = showRevisionReason && Boolean(initialPlan) && JSON.stringify(plan) === JSON.stringify(initialPlan);
+  const revisionReasonTooShort = showRevisionReason && revisionReason.trim().length < 10;
   const selectAction = (id: ProcessActionId) => { setSelected(id); setInputPort(replaceId ? inputPort : plan.length ? '' : 'initial'); };
   const addOrReplace = () => {
     if (!selected) return;
@@ -55,7 +57,8 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
     <div className="plan-controls"><button type="button" disabled={planHistoryDepth === 0} onClick={() => dispatch({ type: 'undo-plan' })}>실행 취소</button><button type="button" disabled={!initialPlan} onClick={() => dispatch({ type: 'restore-initial-plan' })}>처음 공정으로 복원</button></div>
     <ProcessPreview plan={plan} />
     {validIssues.length > 0 && <p role="alert" tabIndex={0} className="plan-error">{validIssues[0].message}</p>}
-    <button type="button" className={`primary-action${attentionActionId === 'prepare-simulation' && validIssues.length === 0 && plan.length > 0 ? ' gi-pulse' : ''}`} disabled={validIssues.length > 0 || plan.length === 0} onClick={() => dispatch({ type: 'start-simulation' })}>가상 실행 준비</button>
+    {showRevisionReason && (revisionReasonTooShort || unchangedRevision) && <p role="alert" tabIndex={0} className="plan-error">{revisionReasonTooShort ? '성질과 남은 물질을 포함해 10자 이상 적어 보세요.' : '처음 공정과 다른 단계를 하나 이상 만들어 보세요.'}</p>}
+    <button type="button" className={`primary-action${attentionActionId === 'prepare-simulation' && validIssues.length === 0 && plan.length > 0 && !revisionReasonTooShort && !unchangedRevision ? ' gi-pulse' : ''}`} disabled={validIssues.length > 0 || plan.length === 0 || revisionReasonTooShort || unchangedRevision} onClick={() => dispatch({ type: 'start-simulation' })}>가상 실행 준비</button>
     <div className="property-hint">확인한 성질: {confirmedPropertyIds.map((id) => PROPERTIES[id].name).join(', ') || '없음'}</div>
   </section>;
 }
