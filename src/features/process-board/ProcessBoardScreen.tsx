@@ -10,7 +10,7 @@ import { ActionCard, getExpectedPorts } from './ActionCard';
 import { ProcessSlot } from './ProcessSlot';
 import { ProcessPreview } from './ProcessPreview';
 
-export interface ProcessBoardScreenProps { missionId: MissionId; confirmedPropertyIds: readonly PropertyId[]; plan: readonly ProcessStep[]; initialPlan: readonly ProcessStep[] | null; planHistoryDepth: number; attentionActionId: AttentionActionId | null; dispatch: Dispatch<LabAction>; }
+export interface ProcessBoardScreenProps { missionId: MissionId; confirmedPropertyIds: readonly PropertyId[]; plan: readonly ProcessStep[]; initialPlan: readonly ProcessStep[] | null; revisionReason?: string; showRevisionReason?: boolean; planHistoryDepth: number; attentionActionId: AttentionActionId | null; dispatch: Dispatch<LabAction>; }
 const portLabels: Record<string, string> = { pass: '통과 물질', retained: '잔류 물질', upper: '위층', lower: '아래층', filtrate: '거른 액체', 'filter-residue': '거름 찌꺼기', 'vapor-model': '수증기 모형', 'solid-residue': '고체 잔류', mixture: '섞인 물질함', 'layered-mixture': '층이 생긴 물질함' };
 const actionIds = Object.keys(ACTIONS) as ProcessActionId[];
 const inputStepId = (input: StreamRef) => input.source === 'step' ? input.stepId : null;
@@ -21,7 +21,7 @@ function makeStep(id: string, actionId: ProcessActionId, input: StreamRef, gap: 
   const params = actionId === 'sieve' ? { gap } : {};
   return { id, actionId, input, evidencePropertyId: evidenceFor(actionId), params } as ProcessStep;
 }
-export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, initialPlan, planHistoryDepth, attentionActionId, dispatch }: ProcessBoardScreenProps) {
+export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, initialPlan, revisionReason = '', showRevisionReason = false, planHistoryDepth, attentionActionId, dispatch }: ProcessBoardScreenProps) {
   const mission = MISSIONS[missionId];
   const [selected, setSelected] = useState<ProcessActionId | null>(null);
   const [gap, setGap] = useState<SieveGap>('wide-gap');
@@ -43,6 +43,7 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
   return <section className="screen process-board-screen" aria-labelledby="design-title">
     <div className="hero-copy"><p className="eyebrow">세 번째 단계</p><h2 id="design-title">공정 설계판</h2><p>{mission.challenge}</p><p>방법을 고른 뒤 버튼으로 단계를 넣습니다. 실제 기구나 측정값을 나타내지 않는 화면 모형입니다.</p></div>
     {initialPlan && <aside className="revision-summary"><h3>최초 공정 요약</h3><p>{initialPlan.map((step, index) => `${index + 1}단계 ${ACTIONS[step.actionId].name}`).join(' → ')}</p><p>어느 단계를 바꾸면 결과가 달라질까요?</p></aside>}
+    {showRevisionReason && initialPlan && <section className="revision-reason"><label htmlFor="revision-reason">공정을 바꾼 이유</label><textarea id="revision-reason" value={revisionReason} onChange={(event) => dispatch({ type: 'set-revision-reason', reason: event.target.value })} /><p>{revisionReason.trim().length < 10 ? '성질과 남은 물질을 포함해 10자 이상 적어 보세요.' : '수정 이유가 기록되었습니다.'}</p></section>}
     <section aria-labelledby="actions-title"><h3 id="actions-title">사용할 행동을 고르세요</h3><div className="action-cards">{actionIds.filter((id) => mission.allowedActionIds.includes(id)).map((id) => <ActionCard key={id} actionId={id} confirmedPropertyIds={confirmedPropertyIds} selected={selected === id} onSelect={() => selectAction(id)} />)}</div></section>
     {(() => { const missing = [...new Set(mission.allowedActionIds.flatMap((id) => ACTIONS[id].requiredPropertyIds).filter((id) => !confirmedPropertyIds.includes(id)))]; return missing.length > 0 ? <p role="alert" tabIndex={0} className="property-guidance">{missing.map((id) => PROPERTIES[id].name).join(', ')} 성질을 먼저 확인하세요. 확인하지 않은 성질이 필요한 행동은 선택할 수 없습니다.</p> : null; })()}
     {selected && <section className="step-config" aria-labelledby="config-title"><h3 id="config-title">{replaceId ? '바꿀 단계 설정' : `${plan.length + 1}단계 설정`}</h3>

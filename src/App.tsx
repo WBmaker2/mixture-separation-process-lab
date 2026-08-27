@@ -9,6 +9,7 @@ import { SimulationScreen } from './features/simulation/SimulationScreen';
 import { useReducedMotion } from './hooks/useReducedMotion';
 import { getMission } from './domain/missions';
 import { runProcess } from './simulation/runProcess';
+import { QualityScreen } from './features/quality/QualityScreen';
 
 export function App() {
   const { state, dispatch } = useLabSession();
@@ -23,7 +24,9 @@ export function App() {
       : state.stage === 'simulation' && mission && fullRun
         ? <SimulationScreen mission={mission} plan={state.draftPlan} fullRun={fullRun} completedStepIds={state.completedStepIds} predictions={state.predictions} attentionActionId={attentionActionId} reducedMotion={reducedMotion} dispatch={dispatch} />
       : (state.stage === 'design' || state.stage === 'revision') && state.missionId
-        ? <ProcessBoardScreen missionId={state.missionId} confirmedPropertyIds={state.confirmedPropertyIds} plan={state.draftPlan} initialPlan={state.initialPlan} planHistoryDepth={state.planHistory.length} attentionActionId={attentionActionId} dispatch={dispatch} />
+        ? <ProcessBoardScreen missionId={state.missionId} confirmedPropertyIds={state.confirmedPropertyIds} plan={state.draftPlan} initialPlan={state.initialPlan} revisionReason={state.revisionReason} showRevisionReason={state.stage === 'revision'} planHistoryDepth={state.planHistory.length} attentionActionId={attentionActionId} dispatch={dispatch} />
+      : state.stage === 'quality' && mission && (state.currentRun ?? fullRun)
+        ? <QualityScreen mission={mission} run={state.currentRun ?? fullRun!} attempt={state.attempt} confirmedPropertyIds={state.confirmedPropertyIds} selectedTargetIds={state.selectedTargetIds} claims={state.recoveryClaims} attentionActionId={attentionActionId} dispatch={dispatch} />
         : <section className="screen"><h2>현재 단계: {state.stage}</h2><p>이 단계 화면은 다음 학습 작업에서 열립니다. 현재 단계로 돌아가려면 처음부터 다시 시작하세요.</p></section>;
   return <AppShell stage={state.stage} updateHistoryButton={<button type="button" className="update-button">업데이트 내역</button>}>{content}</AppShell>;
 }

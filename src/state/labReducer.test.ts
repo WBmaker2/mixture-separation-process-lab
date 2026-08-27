@@ -33,4 +33,9 @@ describe('labReducer', () => {
   it('allows only one attention action at a time', () => expect(getAttentionActionId(createInitialSession())).toBe('select-mission'));
   it('blocks simulation and revision shortcuts and avoids no-op history', () => { const initial = createInitialSession(); expect(labReducer(initial, { type: 'start-simulation' })).toBe(initial); expect(labReducer({ ...initial, stage: 'design', missionId: 'size-sort' }, { type: 'begin-revision' }).attempt).toBe('initial'); const same = { ...initial, initialPlan: [] as const, draftPlan: [] as const }; expect(labReducer(same, { type: 'restore-initial-plan' })).toBe(same); });
   it('keeps integrated initial and revised quality in quality until explicit actions', () => { const integrated: LabSession = { ...createInitialSession(), stage: 'quality', attempt: 'initial', missionId: 'integrated-process', initialPlan: [] }; expect(labReducer(integrated, { type: 'advance' })).toBe(integrated); const revised: LabSession = { ...integrated, attempt: 'revised' }; expect(labReducer(revised, { type: 'advance' })).toBe(revised); expect(labReducer(revised, { type: 'finish-revision' })).toBe(revised); });
+  it('requires a changed process and a reason before saving a revision', () => {
+    const plan = buildIntegratedPlan();
+    const state: LabSession = { ...createInitialSession(), stage: 'revision', attempt: 'revised', missionId: 'integrated-process', selectedTargetIds: ['gravel', 'sand', 'salt'], initialPlan: plan, draftPlan: plan, revisionReason: '소금의 위치를 다시 확인했습니다.' };
+    expect(labReducer(state, { type: 'finish-revision' }).stage).toBe('revision');
+  });
 });
