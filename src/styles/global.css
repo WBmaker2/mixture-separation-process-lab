@@ -1,0 +1,14 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+:root { --ink: #173044; --ink-soft: #4b6274; --surface: #fff; --accent: #176b9e; --accent-soft: #e6f3fb; --focus: #b45309; }
+button, input, select, textarea { font: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, label:focus-within { outline: 3px solid var(--focus); outline-offset: 3px; }
+.skip-link { position: absolute; left: .75rem; top: .5rem; z-index: 20; padding: .7rem 1rem; border-radius: .5rem; background: #fff; color: var(--ink); transform: translateY(-180%); }
+.skip-link:focus { transform: translateY(0); }
