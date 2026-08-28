@@ -30,7 +30,7 @@ describe('screen reader contracts', () => {
       <IntakeScreen missionId="size-sort" selectedTargetIds={['sand']} attentionActionId={null} dispatch={dispatch} />,
       <PropertyLabScreen missionId="size-sort" confirmedPropertyIds={['particle-size']} attentionActionId={null} dispatch={dispatch} />,
       <ProcessBoardScreen missionId="size-sort" confirmedPropertyIds={['particle-size']} plan={[]} initialPlan={null} planHistoryDepth={0} attentionActionId={null} dispatch={dispatch} />,
-      <SimulationScreen mission={mission} plan={plan} fullRun={run} completedStepIds={[]} predictions={{}} attentionActionId="predict-next-step" reducedMotion dispatch={dispatch} />,
+      <SimulationScreen mission={mission} plan={plan} fullRun={run} completedStepIds={[]} predictions={{}} selectedTargetIds={['gravel', 'sand', 'salt']} attentionActionId="predict-next-step" reducedMotion dispatch={dispatch} />,
       <QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} claims={[]} attentionActionId="inspect-quality" dispatch={dispatch} />,
       <ReportScreen mission={mission} selectedTargetIds={mission.goal.requiredTargets} initialPlan={plan} revisedPlan={null} revisionReason="" sustainabilityReflection="" quality={null} onSustainabilityChange={vi.fn()} onPrint={vi.fn()} onReset={vi.fn()} />,
       <UpdateHistoryDialog />,

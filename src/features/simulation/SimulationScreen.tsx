@@ -1,6 +1,6 @@
 import { useState, type Dispatch } from 'react';
 import type { AttentionActionId, LabAction } from '../../state/contracts';
-import type { MissionDefinition, OutputPortId, ProcessStep } from '../../domain/contracts';
+import type { MaterialId, MissionDefinition, OutputPortId, ProcessStep } from '../../domain/contracts';
 import type { ProcessOutcome, SimulationRun } from '../../simulation/contracts';
 import { ACTIONS } from '../../domain/actions';
 import { SafetyNotice } from '../../components/SafetyNotice';
@@ -8,6 +8,7 @@ import { LiveRegion } from '../../components/LiveRegion';
 import { TokenStatusTable } from '../../components/TokenStatusTable';
 import { PredictionPrompt } from './PredictionPrompt';
 import { MovementScene } from './MovementScene';
+import { evaluatePrediction, getPredictionTargetMaterialId } from '../../simulation/prediction';
 
 const candidatePorts: Record<ProcessStep['actionId'], readonly OutputPortId[]> = {
   sieve: ['pass', 'retained', 'unchanged'], 'wait-for-layers': ['layered-mixture', 'unchanged'], 'layer-separation': ['upper', 'lower', 'unchanged'], 'add-water': ['mixture', 'unchanged'], filtration: ['filtrate', 'filter-residue', 'unchanged'], 'virtual-evaporation': ['vapor-model', 'solid-residue', 'unchanged'],
@@ -22,18 +23,19 @@ export function formatMovementAnnouncement(outcome: ProcessOutcome): string {
 }
 function inputIds(run: SimulationRun, step: ProcessStep): readonly string[] { const streamId = step.input.source === 'initial' ? 'initial' : `${step.input.stepId}:${step.input.port}`; return run.streams[streamId]?.tokenIds ?? []; }
 
-export interface SimulationScreenProps { mission: MissionDefinition; plan: readonly ProcessStep[]; fullRun: SimulationRun; completedStepIds: readonly string[]; predictions: Readonly<Record<string, OutputPortId>>; attentionActionId: AttentionActionId | null; reducedMotion: boolean; dispatch: Dispatch<LabAction>; }
-export function SimulationScreen({ mission, plan, fullRun, completedStepIds, predictions, attentionActionId, reducedMotion, dispatch }: SimulationScreenProps) {
+export interface SimulationScreenProps { mission: MissionDefinition; plan: readonly ProcessStep[]; fullRun: SimulationRun; completedStepIds: readonly string[]; predictions: Readonly<Record<string, OutputPortId>>; selectedTargetIds: readonly MaterialId[]; attentionActionId: AttentionActionId | null; reducedMotion: boolean; dispatch: Dispatch<LabAction>; }
+export function SimulationScreen({ mission, plan, fullRun, completedStepIds, predictions, selectedTargetIds, attentionActionId, reducedMotion, dispatch }: SimulationScreenProps) {
   const currentIndex = plan.findIndex((step) => !completedStepIds.includes(step.id));
   const current = currentIndex >= 0 ? plan[currentIndex] : null;
   const outcome = current ? fullRun.outcomes.find((item) => item.stepId === current.id) : null;
   const completedOutcomes = fullRun.outcomes.filter((item) => completedStepIds.includes(item.stepId));
   const [localPredictions, setLocalPredictions] = useState<Readonly<Record<string, OutputPortId>>>({});
   const selectedPrediction = current ? predictions[current.id] ?? localPredictions[current.id] : undefined;
+  const targetMaterialId = current ? getPredictionTargetMaterialId(fullRun, current, selectedTargetIds) : null;
   const runCurrent = () => { if (!current || !selectedPrediction || !outcome) return; dispatch({ type: 'record-step-complete', stepId: current.id }); if (completedStepIds.length + 1 >= plan.length) dispatch({ type: 'set-run', run: fullRun }); };
   return <section className="screen simulation-screen"><SafetyNotice /><header className="hero-copy"><p className="eyebrow">{mission.title}</p><h2>예측하고 가상 실행하기</h2><p>{mission.challenge}</p></header>
-    {current ? <article className="simulation-current"><h3>{currentIndex + 1}단계 · {ACTIONS[current.actionId].name}</h3><PredictionPrompt step={current} candidatePorts={candidatePorts[current.actionId]} selectedPort={selectedPrediction} onSelect={(port) => { setLocalPredictions((previous) => ({ ...previous, [current.id]: port })); dispatch({ type: 'record-prediction', stepId: current.id, port }); }} /><button type="button" data-attention="true" className={`primary-action ${attentionActionId === 'predict-next-step' && !selectedPrediction ? 'gi-pulse' : ''}`} disabled={!selectedPrediction} onClick={runCurrent}>{currentIndex + 1}단계 가상 실행</button></article> : <><p>모든 단계의 실행이 끝났습니다.</p><button type="button" data-attention="true" className="primary-action" onClick={() => { dispatch({ type: 'set-run', run: fullRun }); dispatch({ type: 'advance' }); }}>품질 검사로</button></>}
-    {completedOutcomes.map((item) => { const step = plan.find((candidate) => candidate.id === item.stepId)!; const prediction = predictions[item.stepId]; const actual = item.outputs.map((output) => output.port); return <div className="simulation-preview" key={`scene-${item.stepId}`}><LiveRegion message={formatMovementAnnouncement(item)} /><MovementScene outcome={item} beforeTokenIds={inputIds(fullRun, step)} reducedMotion={reducedMotion} /><TokenStatusTable outcome={item} /><p>나의 예측: {prediction ? portName[prediction] : '기록 없음'} · 실제 출력: {actual.map((port) => portName[port]).join(', ')}</p><p>{prediction && actual.includes(prediction) ? '예측이 실제 출력과 일치했습니다.' : '예측과 실제 출력을 비교해 보세요.'}</p>{item.status === 'no-basis' && <p className="action-card-warning">이 조건에서는 분리 근거가 없음. 입력과 변화 없음 출력을 비교해 보세요.</p>}</div>; })}
+    {current ? <article className="simulation-current"><h3>{currentIndex + 1}단계 · {ACTIONS[current.actionId].name}</h3>{targetMaterialId && <PredictionPrompt step={current} targetMaterialId={targetMaterialId} candidatePorts={candidatePorts[current.actionId]} selectedPort={selectedPrediction} onSelect={(port) => { setLocalPredictions((previous) => ({ ...previous, [current.id]: port })); dispatch({ type: 'record-prediction', stepId: current.id, port }); }} />}<button type="button" data-attention="true" className={`primary-action ${attentionActionId === 'predict-next-step' && !selectedPrediction ? 'gi-pulse' : ''}`} disabled={!selectedPrediction} onClick={runCurrent}>{currentIndex + 1}단계 가상 실행</button></article> : <><p>모든 단계의 실행이 끝났습니다.</p><button type="button" data-attention="true" className="primary-action" onClick={() => { dispatch({ type: 'set-run', run: fullRun }); dispatch({ type: 'advance' }); }}>품질 검사로</button></>}
+    {completedOutcomes.map((item) => { const step = plan.find((candidate) => candidate.id === item.stepId)!; const prediction = predictions[item.stepId]; const target = getPredictionTargetMaterialId(fullRun, step, selectedTargetIds); const check = prediction && target ? evaluatePrediction(item, target, prediction) : null; const actual = item.outputs.map((output) => output.port); return <div className="simulation-preview" key={`scene-${item.stepId}`}><LiveRegion message={formatMovementAnnouncement(item)} /><MovementScene outcome={item} beforeTokenIds={inputIds(fullRun, step)} reducedMotion={reducedMotion} /><TokenStatusTable outcome={item} /><p>나의 예측: {prediction ? portName[prediction] : '기록 없음'} · 실제 출력: {actual.map((port) => portName[port]).join(', ')}</p><p>{check?.matched ? '예측이 목표 물질의 실제 출력과 일치했습니다.' : '예측과 실제 출력을 비교해 보세요.'}</p>{item.status === 'no-basis' && <p className="action-card-warning">이 조건에서는 분리 근거가 없음. 입력과 변화 없음 출력을 비교해 보세요.</p>}</div>; })}
     {completedOutcomes.length > 0 && <section><h3>완료한 단계</h3>{completedOutcomes.map((item) => <details key={item.stepId}><summary>{(plan.findIndex((step) => step.id === item.stepId) + 1)}단계 실행 결과</summary><p>{item.explanation}</p><p className="preview-arrow">↓ 다음 단계 입력은 직전 출력입니다.</p></details>)}</section>}
   </section>;
 }

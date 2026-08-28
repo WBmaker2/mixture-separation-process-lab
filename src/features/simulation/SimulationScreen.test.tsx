@@ -6,6 +6,7 @@ import { MISSIONS } from '../../domain/missions';
 import { runProcess } from '../../simulation/runProcess';
 import { buildIntegratedPlan } from '../../test/missionBuilders';
 import { SimulationScreen } from './SimulationScreen';
+import { MISSIONS as ALL_MISSIONS } from '../../domain/missions';
 
 function renderScreen(
   reducedMotion = false,
@@ -20,6 +21,7 @@ function renderScreen(
       fullRun={runProcess(MISSIONS['integrated-process'], plan)}
       completedStepIds={completedStepIds}
       predictions={predictions}
+      selectedTargetIds={['gravel', 'sand', 'salt']}
       attentionActionId="predict-next-step"
       reducedMotion={reducedMotion}
       dispatch={vi.fn()}
@@ -33,7 +35,8 @@ describe('SimulationScreen', () => {
     const user = userEvent.setup();
     renderScreen();
     expect(screen.getByRole('button', { name: '1단계 가상 실행' })).toBeDisabled();
-    await user.click(screen.getByRole('radio', { name: /자갈은 잔류/ }));
+    await user.click(screen.getByRole('radio', { name: '잔류' }));
+    expect(screen.queryByText(/자갈은 잔류/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '1단계 가상 실행' })).toBeEnabled();
     expect(document.querySelectorAll('[data-attention="true"]')).toHaveLength(1);
   });
@@ -57,5 +60,13 @@ describe('SimulationScreen', () => {
     renderScreen();
     expect(screen.getByRole('radio', { name: '변화 없음' })).toBeInTheDocument();
     expect(screen.queryByText('unchanged')).not.toBeInTheDocument();
+  });
+
+  it('does not approve a wrong lower-layer prediction for an oil target', () => {
+    const plan = [{ id: 'step-1', actionId: 'layer-separation', input: { source: 'initial' }, evidencePropertyId: 'immiscibility', params: {} }] as const;
+    const run = runProcess(ALL_MISSIONS['liquid-layers'], plan);
+    render(<SimulationScreen mission={ALL_MISSIONS['liquid-layers']} plan={plan} fullRun={run} completedStepIds={['step-1']} predictions={{ 'step-1': 'lower' }} selectedTargetIds={['oil']} attentionActionId={null} reducedMotion={false} dispatch={vi.fn()} />);
+    expect(screen.queryByText('예측이 목표 물질의 실제 출력과 일치했습니다.')).not.toBeInTheDocument();
+    expect(screen.queryByText(/자갈은 잔류/)).not.toBeInTheDocument();
   });
 });

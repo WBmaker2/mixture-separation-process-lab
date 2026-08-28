@@ -11,7 +11,7 @@ export function QualityScreen({ mission, run, attempt, confirmedPropertyIds, cla
   const targetIds = useMemo(() => { const allowed = mission.goal.mode === 'all-components' ? mission.goal.requiredTargets : mission.goal.selectableTargets; const selected = (selectedTargetIds ?? []).filter((id) => allowed.includes(id)); if (mission.goal.mode === 'all-components') return mission.goal.requiredTargets; return selected.length ? [selected[0]] : [allowed[0]]; }, [selectedTargetIds, mission]);
   const summary = useMemo(() => computeQuality(run, claims, targetIds), [run, claims, targetIds]);
   const evaluation = useMemo(() => evaluateRun(run, summary, confirmedPropertyIds), [run, summary, confirmedPropertyIds]);
-  const question = getGuidingQuestion(evaluation, run);
+  const question = getGuidingQuestion(evaluation, run, targetIds);
   const revision = !evaluation.accepted || (attempt === 'initial' && mission.id === 'integrated-process');
   const buttonLabel = revision ? '문제 단계 수정하기' : attempt === 'revised' ? '수정 공정 보고서 만들기' : '결과를 바탕으로 공정 설명하기';
   const action = revision ? 'begin-revision' : attempt === 'revised' ? 'finish-revision' : 'advance';

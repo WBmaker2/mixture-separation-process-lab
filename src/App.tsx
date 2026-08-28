@@ -24,7 +24,7 @@ export function App() {
     : state.stage === 'properties' && state.missionId
       ? <PropertyLabScreen missionId={state.missionId} confirmedPropertyIds={state.confirmedPropertyIds} attentionActionId={attentionActionId} dispatch={dispatch} />
       : state.stage === 'simulation' && mission && fullRun
-        ? <SimulationScreen mission={mission} plan={state.draftPlan} fullRun={fullRun} completedStepIds={state.completedStepIds} predictions={state.predictions} attentionActionId={attentionActionId} reducedMotion={reducedMotion} dispatch={dispatch} />
+        ? <SimulationScreen mission={mission} plan={state.draftPlan} fullRun={fullRun} completedStepIds={state.completedStepIds} predictions={state.predictions} selectedTargetIds={state.selectedTargetIds} attentionActionId={attentionActionId} reducedMotion={reducedMotion} dispatch={dispatch} />
       : (state.stage === 'design' || state.stage === 'revision') && state.missionId
         ? <ProcessBoardScreen missionId={state.missionId} confirmedPropertyIds={state.confirmedPropertyIds} plan={state.draftPlan} initialPlan={state.initialPlan} revisionReason={state.revisionReason} showRevisionReason={state.stage === 'revision'} planHistoryDepth={state.planHistory.length} attentionActionId={attentionActionId} dispatch={dispatch} />
       : state.stage === 'report' && mission && state.currentRun && (mission.id === 'integrated-process' || Boolean(state.initialPlan?.length))
