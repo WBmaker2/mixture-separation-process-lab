@@ -2,11 +2,12 @@ import { test, expect, type Page } from '@playwright/test';
 async function activate(page: Page, name: string) { const button = page.getByRole('button', { name }); await button.focus(); await button.press('Enter'); }
 
 test.describe('로컬 전용·개인정보·안전 경계', () => {
-  test('외부 요청과 학생 식별 입력 없이 가상·안전 문구를 제공한다', async ({ page }) => {
+  test('외부 요청과 학생 식별 입력 없이 가상·안전 문구를 제공한다', async ({ page, baseURL }) => {
     const external: string[] = [];
+    const expectedOrigin = new URL(baseURL ?? page.url()).origin;
     const errors: string[] = []; page.on('pageerror', (error) => errors.push(error.message));
     page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-    page.on('request', (request) => { if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') external.push(request.url()); });
+    page.on('request', (request) => { if (new URL(request.url()).origin !== expectedOrigin) external.push(request.url()); });
     await page.goto('./');
     await expect(page.getByText(/가상 공정 시뮬레이션/)).toBeVisible();
     await expect(page.getByText(/교사의 안전 지도/)).toBeVisible();
@@ -15,7 +16,7 @@ test.describe('로컬 전용·개인정보·안전 경계', () => {
     const href = await page.locator('link[rel="icon"]').getAttribute('href');
     expect(href).toBeTruthy();
     const faviconURL = new URL(href!, page.url());
-    expect(faviconURL.origin).toBe(new URL('http://127.0.0.1:4173').origin);
+    expect(faviconURL.origin).toBe(expectedOrigin);
     expect((await page.request.get(faviconURL.toString())).status()).toBe(200);
     expect(external).toEqual([]);
     expect(errors).toEqual([]);
