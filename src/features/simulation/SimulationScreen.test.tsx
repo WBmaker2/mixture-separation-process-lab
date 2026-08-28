@@ -86,6 +86,23 @@ describe('SimulationScreen', () => {
     expect(document.querySelectorAll('[aria-live="polite"]')).toHaveLength(1);
   });
 
+  it('keeps exactly one shared live region for multiple completed steps', () => {
+    renderScreen(true, ['step-1', 'step-2'], { 'step-1': 'retained', 'step-2': 'mixture' });
+    expect(document.querySelectorAll('[aria-live="polite"]')).toHaveLength(1);
+  });
+
+  it('switches a moving scene to static immediately when reduced motion is enabled on rerender', () => {
+    const plan = buildIntegratedPlan();
+    const mission = MISSIONS['integrated-process'];
+    const fullRun = runProcess(mission, plan);
+    const props = { mission, plan, fullRun, completedStepIds: ['step-1'] as const, predictions: { 'step-1': 'retained' as OutputPortId }, selectedTargetIds: ['gravel', 'sand', 'salt'] as const, attentionActionId: null, dispatch: vi.fn() };
+    const view = render(<SimulationScreen {...props} reducedMotion={false} />);
+    expect(screen.getByTestId('moving-token-layer')).toBeInTheDocument();
+    view.rerender(<SimulationScreen {...props} reducedMotion />);
+    expect(screen.queryByTestId('moving-token-layer')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('전 상태에서 후 상태로')).toBeVisible();
+  });
+
   it('uses the completed static announcement immediately for no-basis', () => {
     const plan = [{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'fine-gap' } }] as const;
     const mission = ALL_MISSIONS['size-sort'];
