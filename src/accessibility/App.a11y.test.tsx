@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { describe, expect, it, vi } from 'vitest';
 import { AppShell } from '../components/AppShell';
@@ -20,6 +20,16 @@ describe('screen reader contracts', () => {
   it('provides a keyboard skip link to the main learning content', () => {
     render(<AppShell stage="intake"><p>학습 내용</p></AppShell>);
     expect(screen.getByRole('link', { name: '본문으로 건너뛰기' })).toHaveAttribute('href', '#main-content');
+  });
+
+  it('exposes the property table and process-board status accessibly', async () => {
+    const { container } = render(<PropertyLabScreen missionId="size-sort" confirmedPropertyIds={[]} attentionActionId={null} dispatch={dispatch} />);
+    expect(await axe(container)).toHaveNoViolations();
+    const table = screen.getByRole('table', { name: '미션 물질 성질표' });
+    expect(within(table).getAllByRole('cell')[0]).toHaveAttribute('data-label', '상태');
+    expect(within(table).getAllByRole('cell')[1]).toHaveAttribute('data-label', '알갱이');
+    expect(within(table).getAllByRole('cell')[2]).toHaveAttribute('data-label', '물과의 관계');
+    expect(screen.getByText(/공정 설계판에서 방법을 선택/)).toBeInTheDocument();
   });
 
   it('has no automated violations across learner screens', async () => {
