@@ -72,6 +72,13 @@ describe('ProcessBoardScreen', () => {
     expect(screen.getByRole('button', { name: '처음 공정으로 복원' })).toBeEnabled();
   });
 
+  it('shows learner labels instead of stored property and port ids', () => {
+    const plan = [{ id: 'step-1', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } }];
+    render(<ProcessBoardScreen {...baseProps} plan={plan} />);
+    expect(screen.queryByText('particle-size')).not.toBeInTheDocument();
+    expect(screen.getAllByText(/알갱이 크기/).length).toBeGreaterThan(0);
+  });
+
   it('keeps replacement id and original input while excluding future inputs', async () => {
     const user = userEvent.setup();
     const dispatch = vi.fn();
