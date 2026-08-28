@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch } from 'react';
 import { ACTIONS } from '../../domain/actions';
 import { MISSIONS } from '../../domain/missions';
@@ -10,7 +10,7 @@ import { ActionCard, getExpectedPorts } from './ActionCard';
 import { ProcessSlot } from './ProcessSlot';
 import { ProcessPreview } from './ProcessPreview';
 
-export interface ProcessBoardScreenProps { missionId: MissionId; confirmedPropertyIds: readonly PropertyId[]; plan: readonly ProcessStep[]; initialPlan: readonly ProcessStep[] | null; revisionReason?: string; showRevisionReason?: boolean; planHistoryDepth: number; attentionActionId: AttentionActionId | null; dispatch: Dispatch<LabAction>; }
+export interface ProcessBoardScreenProps { missionId: MissionId; confirmedPropertyIds: readonly PropertyId[]; plan: readonly ProcessStep[]; initialPlan: readonly ProcessStep[] | null; revisionReason?: string; showRevisionReason?: boolean; planHistoryDepth: number; attentionActionId: AttentionActionId | null; reducedMotion: boolean; dispatch: Dispatch<LabAction>; }
 const portLabels: Record<string, string> = { pass: '통과 물질', retained: '잔류 물질', upper: '위층', lower: '아래층', filtrate: '거른 액체', 'filter-residue': '거름 찌꺼기', 'vapor-model': '수증기 모형', 'solid-residue': '고체 잔류', mixture: '섞인 물질함', 'layered-mixture': '층이 생긴 물질함' };
 const EVIDENCE_PROPERTY_BY_ACTION: Readonly<Record<ProcessActionId, PropertyId>> = {
   sieve: 'particle-size',
@@ -29,17 +29,24 @@ function makeStep(id: string, actionId: ProcessActionId, input: StreamRef, gap: 
   const params = actionId === 'sieve' ? { gap } : {};
   return { id, actionId, input, evidencePropertyId: evidenceFor(actionId), params } as ProcessStep;
 }
-export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, initialPlan, revisionReason = '', showRevisionReason = false, planHistoryDepth, attentionActionId, dispatch }: ProcessBoardScreenProps) {
+export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, initialPlan, revisionReason = '', showRevisionReason = false, planHistoryDepth, attentionActionId, reducedMotion, dispatch }: ProcessBoardScreenProps) {
   const mission = MISSIONS[missionId];
   const [selected, setSelected] = useState<ProcessActionId | null>(null);
   const [gap, setGap] = useState<SieveGap>('wide-gap');
   const [inputPort, setInputPort] = useState<string>('');
   const [replaceId, setReplaceId] = useState<string | null>(null);
+  const configRef = useRef<HTMLElement | null>(null);
+  const configHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const replaceIndex = replaceId ? plan.findIndex((step) => step.id === replaceId) : -1;
   const targetIndex = replaceIndex >= 0 ? replaceIndex : plan.length;
   const validIssues = useMemo(() => validatePlan(mission, plan, confirmedPropertyIds), [mission, plan, confirmedPropertyIds]);
   const unchangedRevision = showRevisionReason && Boolean(initialPlan) && JSON.stringify(plan) === JSON.stringify(initialPlan);
   const revisionReasonTooShort = showRevisionReason && revisionReason.trim().length < 10;
+  useEffect(() => {
+    if (!selected || !configRef.current || !configHeadingRef.current) return;
+    configRef.current.scrollIntoView?.({ block: 'center', behavior: reducedMotion ? 'auto' : 'smooth' });
+    configHeadingRef.current.focus();
+  }, [selected, reducedMotion]);
   const selectAction = (id: ProcessActionId) => { setSelected(id); setInputPort(replaceId ? inputPort : plan.length ? '' : 'initial'); };
   const addOrReplace = () => {
     if (!selected) return;
@@ -56,7 +63,7 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
     {showRevisionReason && initialPlan && <section className="revision-reason"><label htmlFor="revision-reason">공정을 바꾼 이유</label><textarea id="revision-reason" value={revisionReason} onChange={(event) => dispatch({ type: 'set-revision-reason', reason: event.target.value })} /><p>{revisionReason.trim().length < 10 ? '성질과 남은 물질을 포함해 10자 이상 적어 보세요.' : '수정 이유가 기록되었습니다.'}</p></section>}
     <section aria-labelledby="actions-title"><h3 id="actions-title">사용할 행동을 고르세요</h3><div className="action-cards">{actionIds.filter((id) => mission.allowedActionIds.includes(id)).map((id) => <ActionCard key={id} actionId={id} confirmedPropertyIds={confirmedPropertyIds} selected={selected === id} onSelect={() => selectAction(id)} />)}</div></section>
     {(() => { const missing = [...new Set(mission.allowedActionIds.flatMap((id) => ACTIONS[id].requiredPropertyIds).filter((id) => !confirmedPropertyIds.includes(id)))]; return missing.length > 0 ? <p role="alert" tabIndex={0} className="property-guidance">{missing.map((id) => PROPERTIES[id].name).join(', ')} 성질을 먼저 확인하세요. 확인하지 않은 성질이 필요한 행동은 선택할 수 없습니다.</p> : null; })()}
-    {selected && <section className="step-config" aria-labelledby="config-title"><h3 id="config-title">{replaceId ? '바꿀 단계 설정' : `${plan.length + 1}단계 설정`}</h3>
+    {selected && <section ref={configRef} className="step-config" aria-labelledby="config-title"><h3 ref={configHeadingRef} tabIndex={-1} id="config-title">{replaceId ? '바꿀 단계 설정' : `${plan.length + 1}단계 설정`}</h3>
       {selected === 'sieve' && <fieldset><legend>체 간격 범주</legend>{([['wide-gap', '넓은 간격'], ['medium-gap', '중간 간격'], ['fine-gap', '고운 간격']] as const).map(([value, label]) => <label key={value}><input type="radio" name="gap" checked={gap === value} onChange={() => setGap(value)} />{label}</label>)}</fieldset>}
       {targetIndex === 0 ? <p>첫 단계 입력: 처음 혼합물</p> : <fieldset><legend>입력 물질함을 고르세요</legend>{plan.slice(0, targetIndex).flatMap((prior, priorIndex) => getExpectedPorts(prior.actionId).map((port) => <label key={`${prior.id}|${port}`}><input type="radio" name="input-port" value={`${prior.id}|${port}`} checked={inputPort === `${prior.id}|${port}`} onChange={(e) => setInputPort(e.target.value)} />{targetIndex + 1}단계 입력: {priorIndex + 1}단계의 {portLabels[port]}</label>))}</fieldset>}
       <button type="button" disabled={!canAdd} onClick={addOrReplace}>{replaceId ? '교체하기' : `${plan.length + 1}단계에 넣기`}</button>

@@ -35,6 +35,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .action-card-status { color: var(--ink-soft); font-weight: 700; }
 .action-card-warning, .broken-warning, .plan-error { color: #a22727; font-weight: 700; }
 .step-config, .process-preview, .process-slot { border: 1px solid #d8e4ef; border-radius: .9rem; padding: 1rem; }
+.step-config h3:focus { outline: 3px solid #f4b942; outline-offset: .25rem; border-radius: .25rem; }
 .step-config label, .process-slot p { display: block; margin: .45rem 0; }
 .process-slot-broken { border: 2px solid #b73535; }
 .slot-controls, .plan-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }

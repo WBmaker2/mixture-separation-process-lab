@@ -10,11 +10,36 @@ const baseProps = {
   initialPlan: null,
   planHistoryDepth: 0,
   attentionActionId: 'prepare-simulation' as const,
+  reducedMotion: false,
   dispatch: vi.fn(),
 };
 
 describe('ProcessBoardScreen', () => {
   afterEach(cleanup);
+  it('focuses and scrolls to the configuration heading after selecting a method', async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+    render(<ProcessBoardScreen {...baseProps} />);
+
+    await user.click(screen.getByRole('button', { name: '방법 선택: 체로 분리' }));
+
+    const heading = screen.getByRole('heading', { name: '1단계 설정' });
+    expect(heading).toHaveAttribute('tabindex', '-1');
+    expect(document.activeElement).toBe(heading);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'smooth' });
+  });
+
+  it('uses instant scrolling when reduced motion is enabled', async () => {
+    const user = userEvent.setup();
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+    render(<ProcessBoardScreen {...baseProps} reducedMotion />);
+
+    await user.click(screen.getByRole('button', { name: '방법 선택: 체로 분리' }));
+
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center', behavior: 'auto' });
+  });
   it('adds a configured method through buttons only', async () => {
     const user = userEvent.setup();
     const dispatch = vi.fn();
@@ -108,7 +133,7 @@ describe('ProcessBoardScreen', () => {
     const user = userEvent.setup();
     const dispatch = vi.fn();
     const plan = [{ id: 'step-1', actionId: 'sieve' as const, input: { source: 'initial' as const }, evidencePropertyId: 'particle-size' as const, params: { gap: 'wide-gap' as const } }];
-    render(<ProcessBoardScreen missionId="integrated-process" confirmedPropertyIds={['particle-size', 'water-solubility', 'filter-behavior', 'evaporation-residue']} plan={plan} initialPlan={null} planHistoryDepth={0} attentionActionId="prepare-simulation" dispatch={dispatch} />);
+    render(<ProcessBoardScreen missionId="integrated-process" confirmedPropertyIds={['particle-size', 'water-solubility', 'filter-behavior', 'evaporation-residue']} plan={plan} initialPlan={null} planHistoryDepth={0} attentionActionId="prepare-simulation" reducedMotion={false} dispatch={dispatch} />);
     await user.click(screen.getByRole('button', { name: '1단계 교체' }));
     await user.click(screen.getByRole('button', { name: '준비 행동 선택: 물 넣기' }));
     await user.click(screen.getByRole('button', { name: '교체하기' }));

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import type { LabStage } from '../state/contracts';
 import { UpdateHistoryDialog } from './UpdateHistoryDialog';
 
@@ -14,12 +14,18 @@ const stages: readonly [LabStage, string][] = [
 
 export function AppShell({ stage, children }: AppShellProps) {
   const currentIndex = stages.findIndex(([id]) => id === stage);
+  const mainRef = useRef<HTMLElement | null>(null);
+  const previousStage = useRef(stage);
+  useEffect(() => {
+    if (previousStage.current !== stage) mainRef.current?.focus();
+    previousStage.current = stage;
+  }, [stage]);
   return <div className="app-shell">
     <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
     <header className="app-header"><div><p className="eyebrow">가상 공정 탐험</p><h1>혼합물 분리 공정 설계소</h1></div></header>
     <nav aria-label="학습 단계" className="stage-nav">
       {stages.map(([id, label], index) => <span key={id} className={id === stage ? 'stage-current' : index < currentIndex ? 'stage-done' : 'stage-locked'} aria-current={id === stage ? 'step' : undefined}>{index + 1}. {label}{index > currentIndex ? ' (아직 열리지 않음)' : ''}</span>)}
     </nav>
-    <main id="main-content" tabIndex={-1}>{children}</main><UpdateHistoryDialog />
+    <main ref={mainRef} id="main-content" tabIndex={-1}>{children}</main><UpdateHistoryDialog />
   </div>;
 }
