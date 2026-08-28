@@ -26,6 +26,7 @@ export function AppShell({ stage, children }: AppShellProps) {
     <nav aria-label="학습 단계" className="stage-nav">
       {stages.map(([id, label], index) => <span key={id} className={id === stage ? 'stage-current' : index < currentIndex ? 'stage-done' : 'stage-locked'} aria-current={id === stage ? 'step' : undefined}>{index + 1}. {label}{index > currentIndex ? ' (아직 열리지 않음)' : ''}</span>)}
     </nav>
-    <main ref={mainRef} id="main-content" tabIndex={-1}>{children}</main><UpdateHistoryDialog />
+    <main ref={mainRef} id="main-content" tabIndex={-1}>{children}</main>
+    <footer className="app-footer"><UpdateHistoryDialog /></footer>
   </div>;
 }

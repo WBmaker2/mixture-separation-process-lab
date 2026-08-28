@@ -27,6 +27,8 @@ describe('ReportScreen', () => {
     expect(screen.getByRole('heading', { name: '완료 근거' })).toBeVisible();
     expect(screen.getByText('첫 공정에서 크기 차이를 이용해 목표를 회수했습니다.')).toBeVisible();
     await user.click(printButton); expect(onPrint).toHaveBeenCalledOnce();
+    expect(screen.getByRole('heading', { name: '이번에 배운 점' })).toBeVisible();
+    expect(screen.getByText(/다음에는 교사 지도 아래/)).toBeVisible();
   });
 
   it('shows a status guard when the integrated report has empty plans', () => {

@@ -1,5 +1,6 @@
 export interface UpdateHistoryEntry { date: `${number}-${number}-${number}`; category: '설계' | '개발' | '개선' | '검수'; summary: string; }
 export const UPDATE_HISTORY: readonly UpdateHistoryEntry[] = [
+  { date: '2026-08-28', category: '개선', summary: '초등학생 검수에 맞춰 예측 판정·모바일 표·버튼 안정성 개선' },
   { date: '2026-08-27', category: '검수', summary: '4개 미션 전체 흐름과 개인정보·안전 점검' },
   { date: '2026-08-27', category: '개발', summary: 'GitHub Pages 자동 배포 흐름 추가' },
   { date: '2026-08-27', category: '개선', summary: '보고서 모바일 여백·공정 유형·인쇄 강조 보완' },
