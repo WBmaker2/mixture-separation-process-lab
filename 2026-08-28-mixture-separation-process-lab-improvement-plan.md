@@ -458,7 +458,7 @@ export function streamLocationLabel(location: string): string;
 
 - [ ] **Step 3: 최소 구현을 작성합니다**
 
-  16×16 또는 32×32 단색 SVG를 `public/favicon.svg`에 두고 `index.html`에 `<link rel="icon" type="image/svg+xml" href="/mixture-separation-process-lab/favicon.svg" />`를 추가합니다. E2E는 저장소 하위 경로를 고려해 `page.goto('./')`를 사용하고, 모든 외부 URL 비교는 현재 preview origin과 비교합니다. 검수표에는 자동·수동 상태를 혼동하지 않도록 실제 실행한 날짜만 기록합니다.
+  16×16 또는 32×32 단색 SVG를 `public/favicon.svg`에 두고 `index.html`에 `<link rel="icon" type="image/svg+xml" href="./favicon.svg" />`를 추가합니다. E2E는 저장소 하위 경로를 고려해 `page.goto('./')`를 사용하고, 문서의 favicon href를 `new URL(href, page.url())`로 해석해 로컬과 Pages 하위 경로 모두에서 HTTP 200을 확인합니다. 모든 외부 URL 비교는 현재 preview origin과 비교합니다. 검수표에는 자동·수동 상태를 혼동하지 않도록 실제 실행한 날짜만 기록합니다.
 
 - [ ] **Step 4: 테스트를 통과시킵니다**
 
