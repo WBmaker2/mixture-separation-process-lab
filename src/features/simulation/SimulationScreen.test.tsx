@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { OutputPortId } from '../../domain/contracts';
@@ -31,6 +31,7 @@ function renderScreen(
 
 describe('SimulationScreen', () => {
   afterEach(cleanup);
+  afterEach(() => vi.useRealTimers());
   it('requires an output prediction before the current step can run', async () => {
     const user = userEvent.setup();
     renderScreen();
@@ -68,5 +69,31 @@ describe('SimulationScreen', () => {
     render(<SimulationScreen mission={ALL_MISSIONS['liquid-layers']} plan={plan} fullRun={run} completedStepIds={['step-1']} predictions={{ 'step-1': 'lower' }} selectedTargetIds={['oil']} attentionActionId={null} reducedMotion={false} dispatch={vi.fn()} />);
     expect(screen.queryByText('예측이 목표 물질의 실제 출력과 일치했습니다.')).not.toBeInTheDocument();
     expect(screen.queryByText(/자갈은 잔류/)).not.toBeInTheDocument();
+  });
+
+  it('announces movement first and the final movement explanation after 700ms', async () => {
+    vi.useFakeTimers();
+    renderScreen(false, ['step-1'], { 'step-1': 'retained' });
+
+    expect(screen.getByTestId('moving-token-layer')).toBeInTheDocument();
+    expect(screen.getAllByText('1단계 토큰이 이동하고 있습니다.')).toHaveLength(2);
+    expect(screen.queryByText('1단계 실행: 자갈 토큰 1개가 잔류로 이동했습니다.')).not.toBeInTheDocument();
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(700); });
+    expect(screen.queryByTestId('moving-token-layer')).not.toBeInTheDocument();
+    expect(screen.getByText('1단계 토큰 이동이 끝났습니다.')).toBeInTheDocument();
+    expect(screen.getByText(/1단계 실행:/)).toBeInTheDocument();
+    expect(document.querySelectorAll('[aria-live="polite"]')).toHaveLength(1);
+  });
+
+  it('uses the completed static announcement immediately for no-basis', () => {
+    const plan = [{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'fine-gap' } }] as const;
+    const mission = ALL_MISSIONS['size-sort'];
+    const run = runProcess(mission, plan);
+    render(<SimulationScreen mission={mission} plan={plan} fullRun={run} completedStepIds={['step-1']} predictions={{ 'step-1': 'unchanged' }} selectedTargetIds={['sand']} attentionActionId={null} reducedMotion={false} dispatch={vi.fn()} />);
+    expect(screen.queryByTestId('moving-token-layer')).not.toBeInTheDocument();
+    expect(screen.getByTestId('before-scene')).toBeVisible();
+    expect(screen.getByTestId('after-scene')).toBeVisible();
+    expect(screen.getByText(/1단계 실행:/)).toBeInTheDocument();
   });
 });

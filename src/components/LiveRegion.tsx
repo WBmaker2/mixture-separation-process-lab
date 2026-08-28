@@ -1,3 +1,3 @@
 export function LiveRegion({ message }: { message: string }) {
-  return <p aria-live="polite" aria-atomic="true" className="live-region">{message}</p>;
+  return <p role="status" aria-live="polite" aria-atomic="true" className="live-region">{message}</p>;
 }

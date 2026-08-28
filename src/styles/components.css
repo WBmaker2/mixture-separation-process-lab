@@ -50,6 +50,9 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .live-region { min-height: 1.5rem; font-weight: 700; }
 .movement-scenes { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; }
 .movement-scene { border: 1px solid #d8e4ef; border-radius: .8rem; padding: 1rem; }
+.token-travel { animation: token-travel 700ms ease-in-out; }
+@keyframes token-travel { from { opacity: .45; transform: translateX(-.7rem); } to { opacity: 1; transform: translateX(.7rem); } }
+@media (prefers-reduced-motion: reduce) { .token-travel { animation: none; } }
 .scene-arrow { font-size: 2rem; color: var(--accent); }
 .simulation-preview { margin-top: 1.5rem; }
 .recovery-claims { display: grid; gap: .8rem; margin: 1.5rem 0; }
