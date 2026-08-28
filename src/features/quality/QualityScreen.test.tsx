@@ -31,6 +31,14 @@ describe('QualityScreen', () => {
     expect(screen.getByText(/\?$/)).toBeVisible();
   });
 
+  it('focuses the guiding question on the lost target in an integrated run', () => {
+    const mission = MISSIONS['integrated-process'];
+    const run = runProcess(mission, buildIntegratedPlan());
+    render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} selectedTargetIds={['gravel', 'sand', 'salt']} claims={[{ materialId: 'gravel', streamId: 'step-1:retained' }, { materialId: 'sand', streamId: 'step-3:filter-residue' }, { materialId: 'salt', streamId: 'step-4:solid-residue' }]} attentionActionId="inspect-quality" dispatch={vi.fn()} />);
+    expect(screen.getByRole('status')).toHaveTextContent('소금');
+    expect(screen.getByRole('status')).not.toHaveTextContent('큰 자갈만');
+  });
+
   it('starts revision without displaying an answer sequence', async () => {
     const user = userEvent.setup();
     const dispatch = vi.fn();
