@@ -5,9 +5,14 @@ async function clickPrimary(page: Page, name: string | RegExp) {
   await button.scrollIntoViewIfNeeded();
   const before = await button.boundingBox();
   expect(before).not.toBeNull();
-  await button.click();
-  // The stage transition removes this button immediately; its pre-click box is
-  // captured at the actual mouse target, so a pulse transform cannot move it.
+  const center = { x: before!.x + before!.width / 2, y: before!.y + before!.height / 2 };
+  await page.mouse.move(center.x, center.y);
+  await page.mouse.down();
+  await page.waitForTimeout(100);
+  const during = await button.boundingBox();
+  expect(during).not.toBeNull();
+  for (const key of ['x', 'y', 'width', 'height'] as const) expect(Math.abs(during![key] - before![key])).toBeLessThanOrEqual(1);
+  await page.mouse.up();
 }
 
 test.describe('Task 7 learner regressions', () => {
