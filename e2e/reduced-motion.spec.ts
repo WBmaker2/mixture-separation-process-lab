@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('replaces movement and pulse animation when reduced motion is enabled', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('./');
   const mission = page.getByRole('radio', { name: /크기 선별선/ });
   await mission.focus(); await page.keyboard.press('Space');
   const target = page.locator('input[name="target"]').first();

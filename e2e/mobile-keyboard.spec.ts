@@ -44,4 +44,4 @@ async function completeMissionWithKeyboard(page: Page, mission: KeyboardMissionC
   }
   const reflection = page.getByLabel('생활 속 분리 기술과 지속가능한 생활에 이 공정이 어떻게 이어질까요?'); await reflection.focus(); await page.keyboard.type('분리한 물질을 다시 쓰면 버리는 자원을 줄일 수 있습니다.'); await assertMobile(page); await expect(page.getByRole('heading', { name: mission.completionName })).toBeVisible();
 }
-for (const mission of cases) test(`completes ${mission.completionName.source} with keyboard at 375px`, async ({ page }) => { await page.goto('/'); await page.evaluate(() => localStorage.clear()); await page.reload(); await completeMissionWithKeyboard(page, mission); });
+for (const mission of cases) test(`completes ${mission.completionName.source} with keyboard at 375px`, async ({ page }) => { await page.goto('./'); await page.evaluate(() => localStorage.clear()); await page.reload(); await completeMissionWithKeyboard(page, mission); });

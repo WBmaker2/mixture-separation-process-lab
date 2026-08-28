@@ -32,7 +32,7 @@ async function claimRecovery(page: Page, labels: readonly string[], streamIds: r
 }
 
 test.describe('전체 미션 learner flow', () => {
-  test.beforeEach(async ({ page }) => { await page.goto('/'); await page.evaluate(() => localStorage.clear()); await page.reload(); });
+  test.beforeEach(async ({ page }) => { await page.goto('./'); await page.evaluate(() => localStorage.clear()); await page.reload(); });
   for (const mission of [
     { title: /크기 선별선/, target: /고운 모래/, properties: [/알갱이 크기/], actions: [['체로 분리', '중간 간격', null]] as const, predictions: [/통과/] },
     { title: /두 액체 관찰조/, target: /식용유 모형/, properties: [/서로 섞이지 않음과 층/], actions: [['층 기다리기', null, null], ['층 분리', null, /1단계.*층이 생긴 물질함/]] as const, predictions: [/층이 생긴 물질함/, /위층/] },
@@ -66,7 +66,7 @@ test('통합 공정은 최초와 수정 공정을 모두 기록한다', async ({
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-  await page.goto('/'); await page.evaluate(() => localStorage.clear()); await page.reload();
+  await page.goto('./'); await page.evaluate(() => localStorage.clear()); await page.reload();
   await chooseMissionAndTarget(page, /통합 공정/, null);
   await confirmProperties(page, [/알갱이 크기/, /물에 녹는 성질/, /거름 행동/, /가상 증발 후 남는 물질/]);
   await addAction(page, '체로 분리', '넓은 간격', null); await addAction(page, '물 넣기', null, /1단계.*통과/);

@@ -55,6 +55,13 @@ test.describe('Task 7 learner regressions', () => {
     await expect(page.locator('body')).not.toContainText(/particle-size|solid|filter-behavior|잔류으로/);
     await page.getByRole('checkbox', { name: /알갱이 크기/ }).check();
     await clickPrimary(page, '공정 설계판으로');
+    await page.getByRole('button', { name: /방법 선택: 체로 분리/ }).click();
+    await page.getByRole('radio', { name: '중간 간격', exact: true }).check();
+    await page.getByRole('button', { name: '1단계에 넣기' }).click();
+    await clickPrimary(page, '가상 실행 준비');
+    await page.getByRole('radio', { name: '통과', exact: true }).check();
+    await clickPrimary(page, '1단계 가상 실행');
+    await expect(page.getByRole('table', { name: '단계별 물질 토큰 상태' })).toBeVisible();
     await expect(page.locator('body')).not.toContainText(/particle-size|solid|filter-behavior|잔류으로/);
   });
 
