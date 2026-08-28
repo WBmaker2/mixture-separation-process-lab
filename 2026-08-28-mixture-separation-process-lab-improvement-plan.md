@@ -347,7 +347,7 @@ export function streamLocationLabel(location: string): string;
 - Test: `src/accessibility/App.a11y.test.tsx`
 
 **Interfaces:**
-- Consumes: `ProcessBoardScreenProps.selected`, `LabStage`, existing `skip-link` and `main-content` contracts.
+- Consumes: `ProcessBoardScreenProps.selected`, `ProcessBoardScreenProps.reducedMotion: boolean`, `LabStage`, existing `skip-link` and `main-content` contracts. `App.tsx` passes the existing `useReducedMotion()` value to both simulation and process-board screens.
 - Produces: `step-config` section with focusable `config-title` heading and `main-content` focus after `stage` changes.
 
 - [ ] **Step 1: 실패 테스트를 먼저 작성합니다**
