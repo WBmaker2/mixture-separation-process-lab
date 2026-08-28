@@ -24,4 +24,5 @@ test('replaces movement and pulse animation when reduced motion is enabled', asy
   await expect(page.getByTestId('before-scene')).toBeVisible();
   await expect(page.getByTestId('after-scene')).toBeVisible();
   await expect(page.getByTestId('moving-token-layer')).toHaveCount(0);
+  await expect(page.getByText(/이동을 마쳤습니다|완료/).first()).toBeVisible();
 });

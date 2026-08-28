@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="혼합물 분리 공정 설계소">
+  <rect width="32" height="32" rx="7" fill="#176b87"/>
+  <circle cx="10" cy="11" r="3" fill="#f7c948"/>
+  <circle cx="22" cy="11" r="3" fill="#f7c948"/>
+  <path d="M7 20h18M10 24h12" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+</svg>

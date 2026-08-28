@@ -35,7 +35,7 @@ test.describe('전체 미션 learner flow', () => {
   test.beforeEach(async ({ page }) => { await page.goto('/'); await page.evaluate(() => localStorage.clear()); await page.reload(); });
   for (const mission of [
     { title: /크기 선별선/, target: /고운 모래/, properties: [/알갱이 크기/], actions: [['체로 분리', '중간 간격', null]] as const, predictions: [/통과/] },
-    { title: /두 액체 관찰조/, target: /식용유 모형/, properties: [/서로 섞이지 않음/], actions: [['층 기다리기', null, null], ['층 분리', null, /1단계.*층이 생긴 물질함/]] as const, predictions: [/층이 생긴 물질함/, /위층/] },
+    { title: /두 액체 관찰조/, target: /식용유 모형/, properties: [/서로 섞이지 않음과 층/], actions: [['층 기다리기', null, null], ['층 분리', null, /1단계.*층이 생긴 물질함/]] as const, predictions: [/층이 생긴 물질함/, /위층/] },
     { title: /소금 회수선/, target: /소금/, properties: [/물에 녹는 성질/, /거름 행동/, /가상 증발 후 남는 물질/], actions: [['물 넣기', null, null], ['거르기', null, /1단계.*섞인 물질함/], ['가상 증발', null, /2단계.*거른 액체/]] as const, predictions: [/섞인 물질함/, /거른 액체/, /고체 잔류/] },
   ]) {
     test(`${mission.title.source ?? '미션'} 완료 보고서`, async ({ page }) => {
