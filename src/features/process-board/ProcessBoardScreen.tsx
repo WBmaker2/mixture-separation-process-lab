@@ -9,6 +9,10 @@ import { validatePlan } from '../../simulation/runProcess';
 import { ActionCard, getExpectedPorts } from './ActionCard';
 import { ProcessSlot } from './ProcessSlot';
 import { ProcessPreview } from './ProcessPreview';
+import { StageHeader } from '../../components/StageHeader';
+import { LearningCallout } from '../../components/LearningCallout';
+import { PrimaryAction } from '../../components/PrimaryAction';
+import { STAGE_COPY } from '../../content/learningCopy';
 
 export interface ProcessBoardScreenProps { missionId: MissionId; confirmedPropertyIds: readonly PropertyId[]; plan: readonly ProcessStep[]; initialPlan: readonly ProcessStep[] | null; revisionReason?: string; showRevisionReason?: boolean; planHistoryDepth: number; attentionActionId: AttentionActionId | null; reducedMotion: boolean; dispatch: Dispatch<LabAction>; }
 const portLabels: Record<string, string> = { pass: '통과 물질', retained: '잔류 물질', upper: '위층', lower: '아래층', filtrate: '거른 액체', 'filter-residue': '거름 찌꺼기', 'vapor-model': '수증기 모형', 'solid-residue': '고체 잔류', mixture: '섞인 물질함', 'layered-mixture': '층이 생긴 물질함' };
@@ -20,7 +24,6 @@ const EVIDENCE_PROPERTY_BY_ACTION: Readonly<Record<ProcessActionId, PropertyId>>
   'add-water': 'water-solubility',
   'wait-for-layers': 'immiscibility',
 };
-const actionIds = Object.keys(ACTIONS) as ProcessActionId[];
 const inputStepId = (input: StreamRef) => input.source === 'step' ? input.stepId : null;
 const brokenReference = (input: StreamRef, consumerIndex: number, plan: readonly ProcessStep[]) => { const id = inputStepId(input); if (!id) return false; const referencedIndex = plan.findIndex((step) => step.id === id); return referencedIndex < 0 || referencedIndex >= consumerIndex; };
 const nextId = (plan: readonly ProcessStep[]) => `step-${Math.max(0, ...plan.map((x) => Number(x.id.replace('step-', '')) || 0)) + 1}`;
@@ -57,11 +60,13 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
     setSelected(null); setReplaceId(null); setInputPort('');
   };
   const canAdd = Boolean(selected) && Boolean(inputPort) && (selected !== 'sieve' || Boolean(gap));
-  return <section className="screen process-board-screen" aria-labelledby="design-title">
-    <div className="hero-copy"><p className="eyebrow">세 번째 단계</p><h2 id="design-title">공정 설계판</h2><p>{mission.challenge}</p><p>방법을 고른 뒤 버튼으로 단계를 넣습니다. 실제 기구나 측정값을 나타내지 않는 화면 모형입니다.</p></div>
+  const attention = attentionActionId === 'prepare-simulation' && validIssues.length === 0 && plan.length > 0 && !revisionReasonTooShort && !unchangedRevision;
+  return <section className="screen process-board-screen" aria-labelledby="stage-title">
+    <StageHeader eyebrow={STAGE_COPY[showRevisionReason ? 'revision' : 'design'].eyebrow} title="공정 설계판" description={mission.challenge} />
+    <LearningCallout tone="hint" title="지금 할 일"><p>{plan.length === 0 ? '성질에 맞는 행동을 골라 첫 단계를 넣어 보세요.' : `${plan.length}단계를 만들었어요. 다음 입력은 앞 단계 출력과 이어야 해요.`}</p></LearningCallout>
     {initialPlan && <aside className="revision-summary"><h3>최초 공정 요약</h3><p>{initialPlan.map((step, index) => `${index + 1}단계 ${ACTIONS[step.actionId].name}`).join(' → ')}</p><p>어느 단계를 바꾸면 결과가 달라질까요?</p></aside>}
     {showRevisionReason && initialPlan && <section className="revision-reason"><label htmlFor="revision-reason">공정을 바꾼 이유</label><textarea id="revision-reason" value={revisionReason} onChange={(event) => dispatch({ type: 'set-revision-reason', reason: event.target.value })} /><p>{revisionReason.trim().length < 10 ? '성질과 남은 물질을 포함해 10자 이상 적어 보세요.' : '수정 이유가 기록되었습니다.'}</p></section>}
-    <section aria-labelledby="actions-title"><h3 id="actions-title">사용할 행동을 고르세요</h3><div className="action-cards">{actionIds.filter((id) => mission.allowedActionIds.includes(id)).map((id) => <ActionCard key={id} actionId={id} confirmedPropertyIds={confirmedPropertyIds} selected={selected === id} onSelect={() => selectAction(id)} />)}</div></section>
+    <section aria-labelledby="actions-title"><h3 id="actions-title">사용할 행동을 고르세요</h3><div className="action-cards">{mission.allowedActionIds.map((id) => <ActionCard key={id} actionId={id} confirmedPropertyIds={confirmedPropertyIds} selected={selected === id} onSelect={() => selectAction(id)} />)}</div></section>
     {(() => { const missing = [...new Set(mission.allowedActionIds.flatMap((id) => ACTIONS[id].requiredPropertyIds).filter((id) => !confirmedPropertyIds.includes(id)))]; return missing.length > 0 ? <p role="alert" tabIndex={0} className="property-guidance">{missing.map((id) => PROPERTIES[id].name).join(', ')} 성질을 먼저 확인하세요. 확인하지 않은 성질이 필요한 행동은 선택할 수 없습니다.</p> : null; })()}
     {selected && <section ref={configRef} className="step-config" aria-labelledby="config-title"><h3 ref={configHeadingRef} tabIndex={-1} id="config-title">{replaceId ? '바꿀 단계 설정' : `${plan.length + 1}단계 설정`}</h3>
       {selected === 'sieve' && <fieldset><legend>체 간격 범주</legend>{([['wide-gap', '넓은 간격'], ['medium-gap', '중간 간격'], ['fine-gap', '고운 간격']] as const).map(([value, label]) => <label key={value}><input type="radio" name="gap" checked={gap === value} onChange={() => setGap(value)} />{label}</label>)}</fieldset>}
@@ -73,7 +78,7 @@ export function ProcessBoardScreen({ missionId, confirmedPropertyIds, plan, init
     <ProcessPreview plan={plan} />
     {validIssues.length > 0 && <p role="alert" tabIndex={0} className="plan-error">{validIssues[0].message}</p>}
     {showRevisionReason && (revisionReasonTooShort || unchangedRevision) && <p role="alert" tabIndex={0} className="plan-error">{revisionReasonTooShort ? '성질과 남은 물질을 포함해 10자 이상 적어 보세요.' : '처음 공정과 다른 단계를 하나 이상 만들어 보세요.'}</p>}
-    <button type="button" data-attention={attentionActionId === 'prepare-simulation' && validIssues.length === 0 && plan.length > 0 && !revisionReasonTooShort && !unchangedRevision ? 'true' : undefined} className={`primary-action${attentionActionId === 'prepare-simulation' && validIssues.length === 0 && plan.length > 0 && !revisionReasonTooShort && !unchangedRevision ? ' gi-pulse' : ''}`} disabled={validIssues.length > 0 || plan.length === 0 || revisionReasonTooShort || unchangedRevision} onClick={() => dispatch({ type: 'start-simulation' })}>가상 실행 준비</button>
+    <PrimaryAction type="button" attention={attention} disabled={validIssues.length > 0 || plan.length === 0 || revisionReasonTooShort || unchangedRevision} onClick={() => dispatch({ type: 'start-simulation' })}>가상 실행 준비</PrimaryAction>
     <div className="property-hint">확인한 성질: {confirmedPropertyIds.map((id) => PROPERTIES[id].name).join(', ') || '없음'}</div>
   </section>;
 }

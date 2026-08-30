@@ -6,8 +6,12 @@ describe('PrimaryAction', () => {
   it('marks only attention actions and keeps the stable pulse class on the button', () => {
     render(<><PrimaryAction attention>다음 단계</PrimaryAction><PrimaryAction attention={false}>보조</PrimaryAction></>);
     const primary = screen.getByRole('button', { name: '다음 단계' });
+    expect(primary).toHaveClass('primary-action');
     expect(primary).toHaveClass('gi-pulse');
     expect(primary).toHaveAttribute('data-attention', 'true');
-    expect(screen.getByRole('button', { name: '보조' })).not.toHaveClass('gi-pulse');
+    const secondary = screen.getByRole('button', { name: '보조' });
+    expect(secondary).toHaveClass('primary-action');
+    expect(secondary).not.toHaveClass('gi-pulse');
+    expect(secondary).not.toHaveAttribute('data-attention');
   });
 });

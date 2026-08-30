@@ -15,6 +15,7 @@ export function ActionCard({ actionId, confirmedPropertyIds, disabled = false, o
   const blocked = disabled || missing.length > 0;
   const prefix = action.kind === 'method' ? '방법 선택' : '준비 행동 선택';
   return <article className={`action-card${selected ? ' action-card-selected' : ''}`}>
+    <span className="action-kind">{action.kind === 'method' ? '분리 방법' : '준비 행동'}</span>
     <button type="button" aria-label={`${prefix}: ${action.name}`} disabled={blocked} onClick={onSelect}>{action.name}</button>
     <p>{action.applicableWhen}</p>
     <p><strong>출력:</strong> {action.outputLabels.join(', ')}</p>

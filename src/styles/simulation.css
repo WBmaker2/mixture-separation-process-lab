@@ -1,0 +1,6 @@
+.simulation-current, .simulation-preview, .problem-step-card { padding: var(--space-5); border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-raised); }
+.simulation-current h3 { margin-bottom: var(--space-4); }
+.guiding-question { margin: 0; padding: 0; border: 0; background: transparent; }
+.movement-phase { color: var(--ink-soft); font-weight: 800; }
+.simulation-screen .live-region { min-height: 1.5rem; color: var(--accent-strong); font-weight: 800; }
+.quality-note { color: var(--ink-soft); }

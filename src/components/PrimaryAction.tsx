@@ -5,6 +5,6 @@ export interface PrimaryActionProps extends ButtonHTMLAttributes<HTMLButtonEleme
 }
 
 export function PrimaryAction({ attention, className = '', ...props }: PrimaryActionProps) {
-  const classes = [className, attention ? 'gi-pulse' : ''].filter(Boolean).join(' ');
+  const classes = ['primary-action', className, attention ? 'gi-pulse' : ''].filter(Boolean).join(' ');
   return <button {...props} className={classes} {...(attention ? { 'data-attention': 'true' } : {})} />;
 }

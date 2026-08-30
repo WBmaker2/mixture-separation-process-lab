@@ -74,6 +74,18 @@ describe('ProcessBoardScreen', () => {
     expect(screen.getByRole('alert')).toHaveAttribute('tabindex', '0');
   });
 
+  it('keeps the mission-defined preparation and method order', () => {
+    render(
+      <ProcessBoardScreen
+        {...baseProps}
+        missionId="integrated-process"
+        confirmedPropertyIds={['particle-size', 'water-solubility', 'filter-behavior', 'evaporation-residue']}
+      />,
+    );
+    const actions = screen.getAllByRole('button', { name: /(?:방법 선택|준비 행동 선택):/ });
+    expect(actions.map((button) => button.textContent)).toEqual(['체로 분리', '물 넣기', '거르기', '가상 증발']);
+  });
+
   it('exposes keyboard buttons for replacement, order, undo, and restoration', () => {
     const plan = [
       {

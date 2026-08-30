@@ -1,0 +1,10 @@
+.process-board-screen { gap: var(--space-5); }
+.process-board-screen > section > h3, .process-preview h3 { margin-bottom: var(--space-3); }
+.process-board-screen .action-card { background: var(--surface-raised); }
+.process-board-screen .action-card button { background: var(--surface); color: var(--accent-strong); border: 2px solid var(--accent); }
+.process-board-screen .action-card button:hover:not(:disabled) { background: var(--accent-soft); }
+.process-board-screen .action-card-selected { background: var(--accent-soft); }
+.process-board-screen .step-config, .process-board-screen .process-preview, .process-board-screen .process-slot { border-color: var(--border); background: var(--surface-raised); }
+.slot-controls button, .plan-controls button, .step-config > button { min-height: 44px; border-color: #9db5c9; background: var(--surface); color: var(--ink); }
+.property-hint { color: var(--ink-soft); font-size: .9rem; }
+@media (max-width: 768px) { .process-board-screen { grid-template-columns: 1fr; } }
