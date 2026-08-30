@@ -37,10 +37,18 @@
 
 이름·이메일·네트워크 요청·외부 폰트·음성 기능·위험한 실험 절차를 추가하지 않았습니다. 새 이미지 자산은 학습 역할이 없어 생성하지 않았고 `public/favicon.svg`는 그대로 보존했습니다.
 
-## Not executed
+## Release follow-up
 
-커밋, 푸시, 배포, 릴리스, HVC 등록, 패키지 설치는 실행하지 않았습니다. 이번 점검에서 `education-webapp-redesign`(`/Users/kimhongnyeon/.codex/skills/education-webapp-redesign/SKILL.md`), `impeccable`(`/Users/kimhongnyeon/.codex/skills/impeccable/SKILL.md`), `ui-ux-pro-max`(`/Users/kimhongnyeon/.agents/skills/ui-ux-pro-max/SKILL.md`), `redesign-existing-projects`(`/Users/kimhongnyeon/.codex/skills/redesign-existing-projects/SKILL.md`), `imagegen`(`/Users/kimhongnyeon/.codex/skills/imagegen/SKILL.md`)의 지침을 읽었습니다. `ui-ux-pro-max` 검색과 `impeccable` detector를 실행했으며, `imagegen`은 안전 자산 감사에서 생성 후보가 없어 호출하지 않았습니다.
+리디자인 점검 당시에는 사용자 승인 전이라 커밋·푸시·배포를 실행하지 않았습니다. 2026-08-30 사용자 승인 후 다음 릴리스를 완료했습니다.
+
+- 커밋: `37ed44aa0835fbacc5417ad87660d469614fcc13` (`feat: redesign learner separation lab`)
+- 푸시: `main` → `origin/main`
+- GitHub Actions: [Deploy to GitHub Pages run 33291630030](https://github.com/WBmaker2/mixture-separation-process-lab/actions/runs/33291630030), build/deploy 성공
+- 공개 결과: [혼합물 분리 공정 설계소](https://wbmaker2.github.io/mixture-separation-process-lab/), HTTP 200 및 HTML 참조 JS/CSS/favicon HTTP 200 확인
+- HVC 등록: 실행하지 않음. 관리자 확인은 [HVC 관리자](https://hongs-vibe-coding-lab.vercel.app/admin)에서 별도로 진행합니다.
+
+이번 점검에서 `education-webapp-redesign`(`/Users/kimhongnyeon/.codex/skills/education-webapp-redesign/SKILL.md`), `impeccable`(`/Users/kimhongnyeon/.codex/skills/impeccable/SKILL.md`), `ui-ux-pro-max`(`/Users/kimhongnyeon/.agents/skills/ui-ux-pro-max/SKILL.md`), `redesign-existing-projects`(`/Users/kimhongnyeon/.codex/skills/redesign-existing-projects/SKILL.md`), `imagegen`(`/Users/kimhongnyeon/.codex/skills/imagegen/SKILL.md`)의 지침을 읽었습니다. `ui-ux-pro-max` 검색과 `impeccable` detector를 실행했으며, `imagegen`은 안전 자산 감사에서 생성 후보가 없어 호출하지 않았습니다.
 
 ## Remaining risk
 
-320px·768px 별도 수동 캡처와 실제 보조공학 승인 검토는 남아 있습니다. 375px 키보드·overflow, 1440px/1280px 캡처, 전용 4180 포트의 18개 E2E는 완료했습니다. VoiceOver는 프로젝트 검증 범위에서 제외했으며, 커밋·푸시·배포·HVC 등록은 별도 승인 전까지 실행하지 않습니다.
+320px·768px 별도 수동 캡처와 실제 보조공학 승인 검토는 남아 있습니다. 375px 키보드·overflow, 1440px/1280px 캡처, 전용 4180 포트의 18개 E2E는 완료했습니다. VoiceOver는 프로젝트 검증 범위에서 제외했으며, HVC 등록은 별도 운영 절차로 남아 있습니다.
