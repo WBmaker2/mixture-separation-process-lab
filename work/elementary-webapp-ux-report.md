@@ -66,9 +66,17 @@ No file under `src/domain/**`, `src/simulation/**` (rule/model files), or `src/s
 - After execution: the learner sees before/after scenes, the token table, prediction comparison, and a completion sentence scoped to the drafted process.
 - Final takeaway remains the report's separation explanation and sustainability reflection; the next action remains the existing report/revision flow.
 
-## Remaining checks and release boundary
+## Remaining checks
 
 - No actual child or teacher research was performed; the panel is an observable comprehension simulation.
 - VoiceOver, TTS, narration, recording, and other voice features were not implemented or tested.
-- The default Playwright browser cache needs to be restored before the unmodified `npm run test:e2e` command can run locally; CI/system-Chrome evidence is currently green.
-- No commit, push, deployment, GitHub Pages release, or HVC registration was run in this cycle. The existing public URL remains a prior-release reference only: `https://wbmaker2.github.io/mixture-separation-process-lab/`.
+- The default Playwright browser cache needs to be restored before the unmodified `npm run test:e2e` command can run locally; system-Chrome evidence is green.
+
+## Release evidence
+
+- PR [#1](https://github.com/WBmaker2/mixture-separation-process-lab/pull/1) was merged into `main` on 2026-08-31.
+- Merge commit: `a5a9387c4dcefe00089e51db699d07f11fda51a0`.
+- GitHub Pages workflow [33344930656](https://github.com/WBmaker2/mixture-separation-process-lab/actions/runs/33344930656) completed successfully (build and deploy jobs).
+- Public learner URL: `https://wbmaker2.github.io/mixture-separation-process-lab/`.
+- Public verification returned HTTP 200, title `혼합물 분리 공정 설계소`, relative JS/CSS/favicon assets, no console errors, no external requests, and a working 375px mission-selection path.
+- HVC registration was not changed in this release.
