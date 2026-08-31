@@ -1,5 +1,6 @@
 export interface UpdateHistoryEntry { date: `${number}-${number}-${number}`; category: '설계' | '개발' | '개선' | '검수'; summary: string; }
 export const UPDATE_HISTORY: readonly UpdateHistoryEntry[] = [
+  { date: '2026-08-31', category: '개선', summary: '결과 단계의 물질함 선택을 쉽게 읽고 빠짐없이 확인하도록 보완' },
   { date: '2026-08-29', category: '개선', summary: '학습 단계 위계·모바일 조작·다음 행동 안내를 리디자인' },
   { date: '2026-08-28', category: '개선', summary: '초등학생 검수에 맞춰 예측 판정·모바일 표·버튼 안정성 개선' },
   { date: '2026-08-27', category: '검수', summary: '4개 미션 전체 흐름과 개인정보·안전 점검' },

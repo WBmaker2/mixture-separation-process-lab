@@ -20,6 +20,45 @@ describe('QualityScreen', () => {
     expect(dispatch).toHaveBeenCalledWith({ type: 'set-recovery-claim', claim: { materialId: 'gravel', streamId: 'step-1:retained' } });
   });
 
+  it('keeps the next action closed until every target has a material box', async () => {
+    const user = userEvent.setup();
+    const dispatch = vi.fn();
+    const mission = MISSIONS['integrated-process'];
+    const run = runProcess(mission, buildIntegratedPlan());
+    render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} claims={[]} selectedTargetIds={mission.goal.requiredTargets} attentionActionId="inspect-quality" dispatch={dispatch} />);
+
+    const action = screen.getByRole('button', { name: '문제 단계 수정하기' });
+    expect(action).toBeDisabled();
+    expect(screen.getByText('각 목표 물질의 물질함을 먼저 골라 보세요.')).toBeVisible();
+    await user.click(action);
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it('enables the next action only after all displayed targets have valid active claims', async () => {
+    const mission = MISSIONS['integrated-process'];
+    const run = runProcess(mission, buildIntegratedPlan());
+    const { rerender } = render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} claims={[{ materialId: 'gravel', streamId: 'step-1:retained' }]} selectedTargetIds={mission.goal.requiredTargets} attentionActionId="inspect-quality" dispatch={vi.fn()} />);
+    expect(screen.getByRole('button', { name: '문제 단계 수정하기' })).toBeDisabled();
+    rerender(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} claims={[{ materialId: 'gravel', streamId: 'step-1:retained' }, { materialId: 'sand', streamId: 'step-3:filter-residue' }, { materialId: 'salt', streamId: 'step-4:solid-residue' }]} selectedTargetIds={mission.goal.requiredTargets} attentionActionId="inspect-quality" dispatch={vi.fn()} />);
+    expect(screen.getByRole('button', { name: '문제 단계 수정하기' })).toBeEnabled();
+  });
+
+  it('uses a concrete learner-facing quality heading', () => {
+    const mission = MISSIONS['size-sort'];
+    const run = runProcess(mission, [{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'medium-gap' } }]);
+    render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} claims={[]} selectedTargetIds={['sand']} attentionActionId="inspect-quality" dispatch={vi.fn()} />);
+    expect(screen.getByRole('heading', { name: '결과를 보고 물질함을 골라요' })).toBeInTheDocument();
+    expect(screen.queryByText(/회수 주장을/)).not.toBeInTheDocument();
+  });
+
+  it('gives narrow-screen quality cells readable labels', () => {
+    const mission = MISSIONS['size-sort'];
+    const run = runProcess(mission, [{ id: 'step-1', actionId: 'sieve', input: { source: 'initial' }, evidencePropertyId: 'particle-size', params: { gap: 'medium-gap' } }]);
+    render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={mission.requiredPropertyIds} claims={[{ materialId: 'sand', streamId: 'step-1:pass' }]} selectedTargetIds={['sand']} attentionActionId="complete-report" dispatch={vi.fn()} />);
+    expect(screen.getByText('9개 토큰').closest('td')).toHaveAttribute('data-label', '회수');
+    expect(screen.getByText('대부분').closest('td')).toHaveAttribute('data-label', '회수 범주');
+  });
+
   it('shows all four quality categories and a guiding question', () => {
     const mission = MISSIONS['integrated-process'];
     const run = runProcess(mission, buildIntegratedPlan());
@@ -44,7 +83,7 @@ describe('QualityScreen', () => {
     const dispatch = vi.fn();
     const mission = MISSIONS['salt-recovery'];
     const run = runProcess(mission, []);
-    render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={[]} claims={[]} attentionActionId="revise-process" dispatch={dispatch} />);
+    render(<QualityScreen mission={mission} run={run} attempt="initial" confirmedPropertyIds={[]} claims={[{ materialId: 'salt', streamId: 'initial' }]} attentionActionId="revise-process" dispatch={dispatch} />);
     expect(screen.queryByText(/정답 공정|정답 순서/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '문제 단계 수정하기' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'begin-revision' });

@@ -113,4 +113,10 @@ describe('SimulationScreen', () => {
     expect(screen.getByTestId('after-scene')).toBeVisible();
     expect(screen.getByText(/1단계 실행:/)).toBeInTheDocument();
   });
+
+  it('scopes completion wording to the drafted process', () => {
+    renderScreen(true, ['step-1', 'step-2', 'step-3', 'step-4'], { 'step-1': 'retained', 'step-2': 'mixture', 'step-3': 'filtrate', 'step-4': 'solid-residue' });
+    expect(screen.getByText('현재 공정의 단계를 모두 실행했어요')).toBeVisible();
+    expect(screen.queryByText('모든 단계를 실행했어요')).not.toBeInTheDocument();
+  });
 });
