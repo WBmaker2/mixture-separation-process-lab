@@ -65,6 +65,34 @@ test.describe('Task 7 learner regressions', () => {
     await expect(page.locator('body')).not.toContainText(/particle-size|solid|filter-behavior|잔류으로/);
   });
 
+  test('requires every quality target box before continuing', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('./');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.getByRole('radio', { name: /크기 선별선/ }).check();
+    await page.getByRole('radio', { name: /고운 모래/ }).last().check();
+    await clickPrimary(page, '성질 분석실로');
+    await page.getByRole('checkbox', { name: /알갱이 크기/ }).check();
+    await clickPrimary(page, '공정 설계판으로');
+    await page.getByRole('button', { name: /방법 선택: 체로 분리/ }).click();
+    await page.getByRole('radio', { name: '중간 간격', exact: true }).check();
+    await page.getByRole('button', { name: '1단계에 넣기' }).click();
+    await clickPrimary(page, '가상 실행 준비');
+    await page.getByRole('radio', { name: '통과', exact: true }).check();
+    await clickPrimary(page, '1단계 가상 실행');
+    await clickPrimary(page, '품질 검사로');
+
+    const action = page.getByRole('button', { name: /문제 단계 수정하기|결과를 바탕으로 공정 설명하기/ });
+    await expect(action).toBeDisabled();
+    await expect(page.getByText('각 목표 물질의 물질함을 먼저 골라 보세요.')).toBeVisible();
+    const optionLabels = await page.getByLabel('고운 모래 회수 물질함').locator('option').allTextContents();
+    expect(optionLabels.join(' ')).not.toContain('step-');
+    await page.getByLabel('고운 모래 회수 물질함').selectOption('step-1:pass');
+    await expect(action).toBeEnabled();
+    await expect(page.getByText('선택한 물질함의 토큰: 고운 모래 9개')).toBeVisible();
+  });
+
   test('fits property table and footer controls on narrow screens', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('./');
